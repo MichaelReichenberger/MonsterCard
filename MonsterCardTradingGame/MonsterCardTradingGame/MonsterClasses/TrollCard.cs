@@ -11,7 +11,7 @@ namespace MonsterCardTradingGame.MonsterClasses
     {
 
         private const int TrollDamage = 30;
-        public TrollCard(string name, string element, int damage) : base(name, element, TrollDamage)
+        public TrollCard(string name, string element) : base(name, element, TrollDamage)
         {
         }
     }

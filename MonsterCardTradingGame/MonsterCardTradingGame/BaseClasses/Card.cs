@@ -27,7 +27,11 @@ namespace MonsterCardTradingGame.BaseClasses
             }
         }
 
-        protected string Element { get; set; }
+        private string _element;
+        protected string Element
+        {
+            get { return _element;} set { _element = value; }
+        }
         protected int Damage { get; set; }
 
         protected int test = 0;

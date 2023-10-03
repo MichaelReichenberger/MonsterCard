@@ -10,7 +10,7 @@ namespace MonsterCardTradingGame.MonsterClasses
     internal class OrkCard : MonsterCard
     {
         private const int OrkDamage = 45;
-        public OrkCard(string name, string element, int damage) : base(name, element, OrkDamage)
+        public OrkCard(string name, string element) : base(name, element, OrkDamage)
         {
         }
     }

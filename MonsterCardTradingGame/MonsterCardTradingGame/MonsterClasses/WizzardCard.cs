@@ -11,7 +11,7 @@ namespace MonsterCardTradingGame.MonsterClasses
     {
 
         private const int WizzardDamage = 35;
-        public WizzardCard(string name, string element, int damage) : base(name, element, 35)
+        public WizzardCard(string name, string element) : base(name, element, 35)
         {
         }
     }
