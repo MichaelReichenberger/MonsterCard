@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MonsterCardTradingGame.BaseClasses;
-
-namespace MonsterCardTradingGame.MonsterClasses
+﻿namespace MonsterCardTradingGame.Models.MonsterClasses
 {
     internal class KrakenCard : MonsterCard
     {
@@ -13,6 +6,12 @@ namespace MonsterCardTradingGame.MonsterClasses
         private const int KrakenDamage = 35;
         public KrakenCard(string name, string element) : base(name, element, KrakenDamage)
         {
+        }
+
+        public override int attack(Card OpponentCard)
+        {
+            return Damage;
+
         }
     }
 }

@@ -4,60 +4,58 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
-using MonsterCardTradingGame.MonsterClasses;
+using MonsterCardTradingGame.Models.MonsterClasses;
 
-namespace MonsterCardTradingGame.BaseClasses
+namespace MonsterCardTradingGame.Models
 {
     internal class Package
     {
         private const int PackageCosts = 20;
-        public Card[] Cards;
+        public Dictionary<string, Card> Cards;
 
 
         //Package Konstruktor mit random Karten mit unterschiedlichen Wahrscheinlichkeiten
         public Package(string name)
         {
-            Cards = new Card[5]; 
-            var randomVar = new Random(); 
-
+            var randomVar = new Random();
+            Cards = new Dictionary<string, Card>();
             for (int i = 0; i < 5; i++)
             {
                 string Cardname = Console.ReadLine();
                 int randomInt = randomVar.Next(0, 1000);
-
                 switch (randomInt)
                 {
                     case var n when (n <= 50):
                         DragonCard newDragoncard = new DragonCard(Cardname, "water");
-                        Cards[i] = newDragoncard;
+                        Cards["DragonCard"] = newDragoncard;
                         break;
                     case var n when (n <= 150):
                         KnightCard newKnightCard = new KnightCard(Cardname, "water");
-                        Cards[i] = newKnightCard;
+                        Cards["KnightCard"] = newKnightCard;
                         break;
                     case var n when (n <= 350):
                         ElveCard newElveCard = new ElveCard(Cardname, "water");
-                        Cards[i] = newElveCard;
+                        Cards["ElveCard"] = newElveCard;
                         break;
                     case var n when (n <= 600):
                         GoblinCard newGoblinCard = new GoblinCard(Cardname, "water");
-                        Cards[i] = newGoblinCard;
+                        Cards["GoblinCard"] = newGoblinCard;
                         break;
                     case var n when (n <= 680):
                         OrkCard newOrkCard = new OrkCard(Cardname, "water");
-                        Cards[i] = newOrkCard;
+                        Cards["OrkCard"] = newOrkCard;
                         break;
                     case var n when (n <= 850):
                         TrollCard newTrollCard = new TrollCard(Cardname, "water");
-                        Cards[i] = newTrollCard;
+                        Cards["TrollCard"] = newTrollCard;
                         break;
-                    case var n when (n <= 930 ):
+                    case var n when (n <= 930):
                         KrakenCard newKrakenCard = new KrakenCard(Cardname, "water");
-                        Cards[i] = newKrakenCard;
+                        Cards["KrakenCard"] = newKrakenCard;
                         break;
                     case var n when (n <= 1000):
                         WizzardCard newWizzardCard = new WizzardCard(Cardname, "water");
-                        Cards[i] = newWizzardCard;
+                        Cards["WizzardCard"] = newWizzardCard;
                         break;
                     default:
                         break;
@@ -67,9 +65,9 @@ namespace MonsterCardTradingGame.BaseClasses
 
         public void printPackage()
         {
-            for (int i = 0; i < 5; i++)
+            foreach (KeyValuePair<string, Card> Card in Cards)
             {
-                Console.WriteLine(Cards[i].Name + Cards[i]);
+                Console.WriteLine(Card.Value.Name);
             }
         }
     }

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MonsterCardTradingGame.BaseClasses
+﻿namespace MonsterCardTradingGame.Models
 {
-    internal class MonsterCard : Card
+    internal abstract class MonsterCard : Card
     {
         protected MonsterCard(string name, string element, int damage) : base(name, element, damage)
         {

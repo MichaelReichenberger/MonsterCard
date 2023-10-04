@@ -1,16 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace MonsterCardTradingGame.BaseClasses
+﻿namespace MonsterCardTradingGame.Models
 {
-    internal  class Card
+    internal abstract  class Card
     {
 
         private string _name;
-
         public string Name
         {
             get { return _name; }
@@ -28,7 +21,7 @@ namespace MonsterCardTradingGame.BaseClasses
         }
 
         private string _element;
-        protected string Element
+        public string Element
         {
             get { return _element;} set { _element = value; }
         }
@@ -42,5 +35,7 @@ namespace MonsterCardTradingGame.BaseClasses
             Element = element;
             Damage = damage;
         }
+        public abstract int attack(Card OpponentCard);
+
     }
 }

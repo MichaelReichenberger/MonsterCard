@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MonsterCardTradingGame.BaseClasses;
 
-namespace MonsterCardTradingGame.MonsterClasses
+namespace MonsterCardTradingGame.Models.MonsterClasses
 {
     internal class TrollCard : MonsterCard
     {
@@ -13,6 +12,11 @@ namespace MonsterCardTradingGame.MonsterClasses
         private const int TrollDamage = 30;
         public TrollCard(string name, string element) : base(name, element, TrollDamage)
         {
+        }
+
+        public override int attack(Card OpponentCard)
+        {
+            return Damage;
         }
     }
 }
