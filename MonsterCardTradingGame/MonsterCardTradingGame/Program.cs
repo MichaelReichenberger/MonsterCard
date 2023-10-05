@@ -1,42 +1,30 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using MonsterCardTradingGame.Server;
 
-namespace MonsterCardTradingGame
+var httpServer = new TcpListener(IPAddress.Loopback, 10001);
+httpServer.Start();
+while (true)
 {
-   internal class Program
+
+    var clientSocket = httpServer.AcceptTcpClient();
+    using var writer = new StreamWriter(clientSocket.GetStream()) { AutoFlush = true };
+    using var reader = new StreamReader(clientSocket.GetStream());
+
+//read the request
+    string? line;
+    while ((line = reader.ReadLine()) != null)
     {
-        static async Task Main(string[] args)
-        {
-            //Initialising Server
-            string[] prefixes = { "http://localhost:8080/" };
-            SimpleRestServer newRestServer = new SimpleRestServer(prefixes);
-
-            //Start Server on 2cnd Thread, so that he is not blocking the Main Thread
-            Task.Run(() => newRestServer.Run());
-
-            //Wait for Server to start
-            await Task.Delay(1000);
-
-            // Send HTTP Request
-            using (HttpClient client = new HttpClient())
-            {
-                try
-                {
-                    HttpResponseMessage response = await client.GetAsync("http://localhost:8080/hello");
-                    response.EnsureSuccessStatusCode();
-                    string responseBody = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine(responseBody);
-                }
-                catch (HttpRequestException e)
-                {
-                    Console.WriteLine($"Anfrage fehlgeschlagen: {e.Message}");
-                }
-            }
-
-            //Stop Server
-            newRestServer.Stop();
-        }
+        Console.WriteLine(line);
     }
+
+//write HTTP-response
+    writer.WriteLine("HTTP/1.0 200 OK");
+    writer.WriteLine("Contend-Type: text/html; charset=utf-8");
+    writer.WriteLine();
+    writer.WriteLine("<html> <body> <h1> Hello World</h1></body> </html>");
+
 }
