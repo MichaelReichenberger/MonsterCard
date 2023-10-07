@@ -1,4 +1,4 @@
-﻿namespace MonsterCardTradingGame.Models
+﻿namespace MonsterCardTradingGame.Models.BaseClasses
 {
     internal class CardStack
     {

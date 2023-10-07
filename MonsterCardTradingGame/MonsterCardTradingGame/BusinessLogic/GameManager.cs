@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MonsterCardTradingGame.Models;
+using MonsterCardTradingGame.Models.BaseClasses;
 
 namespace MonsterCardTradingGame.BusinessLogic
 {
@@ -11,6 +11,7 @@ namespace MonsterCardTradingGame.BusinessLogic
     {
         public void GameLoop(Player Player1, Player Player2)
         {
+            Console.WriteLine("STARTED GAME");
             var randomVar = new Random();
             while (Player1.CardDeck.Deck.Any() && !Player2.CardDeck.Deck.Any())
             {
@@ -29,6 +30,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 }
                 else
                 {
+                    
                     Player1.CardDeck.Deck.Remove(ChoosenCard1.Name);
                     Player2.CardDeck.Deck.Remove(ChoosenCard2.Name);
                 }

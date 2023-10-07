@@ -1,4 +1,4 @@
-﻿namespace MonsterCardTradingGame.Models
+﻿namespace MonsterCardTradingGame.Models.BaseClasses
 {
     internal abstract  class Card
     {
@@ -20,22 +20,14 @@
             }
         }
 
-        private string _element;
-        public string Element
-        {
-            get { return _element;} set { _element = value; }
-        }
-        protected int Damage { get; set; }
-
-        protected int test = 0;
-
-        protected Card(string name, string element, int damage)
+        public string Element { get; set; }
+        public int Damage { get; set; }
+        public Card(string name, string element, int damage)
         {
             Name = name;
             Element = element;
             Damage = damage;
         }
         public abstract int attack(Card OpponentCard);
-
     }
 }

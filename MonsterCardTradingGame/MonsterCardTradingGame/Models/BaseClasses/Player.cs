@@ -1,4 +1,4 @@
-﻿namespace MonsterCardTradingGame.Models
+﻿namespace MonsterCardTradingGame.Models.BaseClasses
 {
     internal class Player
     {
@@ -12,12 +12,13 @@
 
         public CardDeck CardDeck { get; set; }
         public CardStack CardStack { get; set; }
-        public Player(string name, string passwordHash)
+        public Player(string name, string passwordHash, CardDeck cardDeck)
         {
             Name = name;
             PasswordHash = passwordHash;
             Coins = 20;
             PlayerId++;
+            CardDeck = cardDeck;
         }
     }
 }

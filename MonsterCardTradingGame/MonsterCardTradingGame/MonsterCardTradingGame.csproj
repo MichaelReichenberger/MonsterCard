@@ -8,9 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Database\" />
-    <Folder Include="Models\NewFolder\" />
-    <Folder Include="SpellClasses\" />
+    <Compile Remove="Database\**" />
+    <Compile Remove="SpellClasses\**" />
+    <EmbeddedResource Remove="Database\**" />
+    <EmbeddedResource Remove="SpellClasses\**" />
+    <None Remove="Database\**" />
+    <None Remove="SpellClasses\**" />
   </ItemGroup>
 
 </Project>

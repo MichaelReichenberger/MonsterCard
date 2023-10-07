@@ -1,4 +1,6 @@
-﻿namespace MonsterCardTradingGame.Models.MonsterClasses
+﻿using MonsterCardTradingGame.Models.BaseClasses;
+
+namespace MonsterCardTradingGame.Models.MonsterClasses
 {
     internal class KrakenCard : MonsterCard
     {

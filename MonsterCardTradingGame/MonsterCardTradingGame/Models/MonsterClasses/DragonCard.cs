@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MonsterCardTradingGame.Models.BaseClasses;
 
 namespace MonsterCardTradingGame.Models.MonsterClasses
 {
@@ -12,7 +13,6 @@ namespace MonsterCardTradingGame.Models.MonsterClasses
         public DragonCard(string name, string element) : base(name, element, DragonDamage)
         {
         }
-
         public override int attack(Card OpponentCard)
         {
             if (OpponentCard is ElveCard && OpponentCard.Element == "Fire")
