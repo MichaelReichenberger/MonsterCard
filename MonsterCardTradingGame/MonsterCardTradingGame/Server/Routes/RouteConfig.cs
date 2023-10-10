@@ -19,25 +19,25 @@ namespace MonsterCardTradingGame.Server.Routes
         private void DefineRoutes()
         {
             //Default Route
-            _router.AddRoute("/", () =>
+            _router.AddRoute("GET","/", (requestBody) =>
             {
                 return new ResponseGenerator().GenerateResponse();
             });
 
             //Info Route
-            _router.AddRoute("/about", () =>
+            _router.AddRoute("GET","/about", (requestBody) =>
             {
                 return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>About Us</h1></body></html>";
             });
 
             //Home Route
-            _router.AddRoute("/home", () =>
+            _router.AddRoute("GET","/home", (requestBody) =>
             {
                 return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Home</h1></body></html>";
             });
 
             //Start a Game
-            _router.AddRoute("/startgame", () =>
+            _router.AddRoute("POST","/startgame", (requestBody) =>
             {
                 Dictionary<string, Card> newDeck = new Dictionary<string, Card>();
                 CardDeck cd = new CardDeck(newDeck);
@@ -48,14 +48,20 @@ namespace MonsterCardTradingGame.Server.Routes
             });
 
             //Draw Package
-            _router.AddRoute("/drawPackage", () =>
+            _router.AddRoute("POST","/drawpackage",  (requestBody) =>
             {
-                _package = new Package("newPackage");
-                _package.printPackage();
-                JsonSerializerOptions newOptions = new JsonSerializerOptions{WriteIndented = true};
-                string _packageString = JsonSerializer.Serialize(_package, newOptions);
-                Console.WriteLine(_packageString); 
-                return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>"+_packageString+"</h1></body></html>";
+                if (int.Parse(requestBody) < 20)
+                {
+                    return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" + "Sorry not enough Coins" + "</h1></body></html>";
+                }
+                else
+                {
+                    _package = new Package("newPackage");
+                    JsonSerializerOptions newOptions = new JsonSerializerOptions { WriteIndented = true };
+                    string _packageString = JsonSerializer.Serialize(_package, newOptions);
+                    Console.WriteLine(requestBody);
+                    return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" + requestBody + "</h1></body></html>";
+                }
             });
         }
     }
