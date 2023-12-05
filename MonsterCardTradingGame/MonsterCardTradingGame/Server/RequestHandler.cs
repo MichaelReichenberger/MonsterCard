@@ -18,6 +18,7 @@ namespace MonsterCardTradingGame.Server
 
         private string ParseUrl(string requestLine)
         {
+            Console.WriteLine(requestLine);
             var parts = requestLine.Split(' ');
             if (parts.Length > 1)
             {
@@ -29,7 +30,7 @@ namespace MonsterCardTradingGame.Server
         private string ParseParameter(string requestLine)
         {
             var parts = requestLine.Split('/');
-            if (parts.Length > 1)
+            if (parts.Length > 2)
             {
                 return parts[2];
             }
@@ -57,7 +58,8 @@ namespace MonsterCardTradingGame.Server
                 {
                     requestMethod = line.Split(' ')[0];
                     requestUrl = ParseUrl(line);
-                    requestParameter=ParseParameter(line);
+                    Console.WriteLine(requestUrl);
+                    requestParameter=ParseParameter(requestUrl);
                     Console.WriteLine(requestParameter);
                 }
 
