@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 using MonsterCardTradingGame.BusinessLogic;
+using MonsterCardTradingGame.DataBase.Repositories;
 using MonsterCardTradingGame.Models.BaseClasses;
 
 namespace MonsterCardTradingGame.Server.Routes
@@ -33,6 +34,11 @@ namespace MonsterCardTradingGame.Server.Routes
             //Home Route
             _router.AddRoute("GET","/home", (requestBody) =>
             {
+                UserRepository newUserRep =
+                    new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
+                newUserRep.GetUserId("testUser");
+                
+                Console.WriteLine(newUserRep.GetUserId("hallo"));
                 return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Home</h1></body></html>";
             });
 
@@ -46,6 +52,32 @@ namespace MonsterCardTradingGame.Server.Routes
                 _gameManager.GameLoop(player1, player2);
                 return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Game started</h1></body></html>";
             });
+
+
+            //User and Session Routes
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("POST", "/users", (requestBody) =>
+            {
+                return "User Registered";
+            });
+
+            _router.AddRoute("GET", "/users/username", (requestBody) =>
+            {
+                return "Test";
+            });
+
+            _router.AddRoute("PUT", "/users/username", (requestBody) =>
+            {
+                return "Test";
+            });
+
+            _router.AddRoute("POST", "/sessions", (requestBody) =>
+            {
+                return "Test";
+            });
+            ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
 
             //Draw Package
             _router.AddRoute("POST","/drawpackage",  (requestBody) =>

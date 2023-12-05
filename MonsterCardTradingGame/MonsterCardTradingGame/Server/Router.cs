@@ -19,7 +19,7 @@ namespace MonsterCardTradingGame.Server
             routes.Add(new Route(method, url, action));
         }
 
-        public string HandleRequest(string method, string url,string requestBody)
+        public string HandleRequest(string method, string url,string requestBody, string requestParameter)
         {
             foreach (var route in routes)
             {

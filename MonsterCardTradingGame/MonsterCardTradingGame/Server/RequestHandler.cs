@@ -26,6 +26,16 @@ namespace MonsterCardTradingGame.Server
             return "/";
         }
 
+        private string ParseParameter(string requestLine)
+        {
+            var parts = requestLine.Split('/');
+            if (parts.Length > 1)
+            {
+                return parts[2];
+            }
+            return parts[1];
+        }
+
         public void ProcessRequest()
         {
             using var writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
@@ -34,18 +44,21 @@ namespace MonsterCardTradingGame.Server
             string? line;
             string requestMethod = string.Empty;
             string requestUrl = string.Empty;
+            string requestParameter = string.Empty;
             string body = string.Empty;
             int? contentLength = null;
 
             //Reading the Header
             while (!string.IsNullOrEmpty(line = reader.ReadLine()))
             {
-                Console.WriteLine(line);
+                //Console.WriteLine(line);
                 if (line.StartsWith("GET") || line.StartsWith("POST") || line.StartsWith("PUT") ||
                     line.StartsWith("DELETE"))
                 {
                     requestMethod = line.Split(' ')[0];
                     requestUrl = ParseUrl(line);
+                    requestParameter=ParseParameter(line);
+                    Console.WriteLine(requestParameter);
                 }
 
                 if (line.StartsWith("Content-Length:"))
@@ -64,10 +77,8 @@ namespace MonsterCardTradingGame.Server
 
             var router = new Router();
             var routeConfig = new RouteConfig(router);
-
-            var response = router.HandleRequest(requestMethod, requestUrl, body);
-            writer.WriteLine(response);
+            var response = router.HandleRequest(requestMethod, requestUrl,body, requestParameter);
+            writer.WriteLine(response + requestParameter);
         }
-
     }
 }

@@ -9,7 +9,7 @@ using MonsterCardTradingGame.Models.MonsterClasses;
 
 namespace MonsterCardTradingGame.Models.BaseClasses
 {
-    internal class Package
+    public class Package
     {
         private const int PackageCosts = 20;
         public Dictionary<string, Card> Cards { get; private set; }
