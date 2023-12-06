@@ -13,9 +13,9 @@ namespace MonsterCardTradingGame.Server.Routes
         public string Method { get; }
         public string Url { get; }
         public RouteAction Action { get; }
-        public string Execute(string requestBody)
+        public string Execute(string requestBody,  string requestParameter)
         {
-            return Action(requestBody);
+            return Action(requestBody, requestParameter);
         }
         public Route(string method, string url, RouteAction action)
         {

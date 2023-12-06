@@ -31,12 +31,48 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         {
             return _dbAccess.ExecuteQuery(conn =>
             {
-                using (var cmd = new NpgsqlCommand("SELECT username FROM users WHERE username = @username", conn)) // Hier wird die Verbindung zugewiesen.
+                using (var cmd = new NpgsqlCommand("SELECT u.userid FROM users u WHERE u.username = @username;", conn))
                 {
                     cmd.Parameters.AddWithValue("@username", username);
                     return (int?)cmd.ExecuteScalar();
                 }
             });
         }
+
+        internal Dictionary<string, object> GetUserData(string username)
+        {
+            return _dbAccess.ExecuteQuery(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT u.username, u.coins, u.level, c.cardid, c.name, c.element, c.damage FROM users u JOIN decks d ON u.deckid = d.deckid JOIN cards c ON d.cardid = c.cardid WHERE u.username = @username", conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var result = new Dictionary<string, object>();
+                        bool userDataSet = false;
+                        while (reader.Read())
+                        {
+                            if (!userDataSet)
+                            {
+                                result.Add("username", reader["username"]);
+                                result.Add("coins", reader["coins"]);
+                                result.Add("level", reader["level"]);
+                                userDataSet = true;
+                            }
+
+                            var cardData = new Dictionary<string, object>();
+                            cardData.Add("cardid", reader["cardid"]);
+                            cardData.Add("name", reader["name"]);
+                            cardData.Add("element", reader["element"]);
+                            cardData.Add("damage", reader["damage"]);
+                            result.Add($"card_{reader["cardid"]}", cardData);
+                        }
+                        return result;
+                    }
+                }
+            });
+        }
+
+
     }
 }

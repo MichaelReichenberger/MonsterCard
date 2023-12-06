@@ -16,25 +16,25 @@ namespace MonsterCardTradingGame.Server
             _client = client;
         }
 
-        private string ParseUrl(string requestLine)
+        
+        private string ParseUrl(string requestLine, int parseType)
         {
-            Console.WriteLine(requestLine);
-            var parts = requestLine.Split(' ');
+            string[] parts = requestLine.Split(' ');
             if (parts.Length > 1)
             {
-                return parts[1];
+                
+                string[] urlParts = parts[1].Split('/');
+                if (urlParts.Length > parseType)  
+                {
+                    Console.WriteLine(urlParts[parseType]);
+                    if (parseType == 1)
+                    {
+                        return "/"+ urlParts[parseType];
+                    }
+                    return urlParts[parseType];
+                }
             }
             return "/";
-        }
-
-        private string ParseParameter(string requestLine)
-        {
-            var parts = requestLine.Split('/');
-            if (parts.Length > 2)
-            {
-                return parts[2];
-            }
-            return parts[1];
         }
 
         public void ProcessRequest()
@@ -57,10 +57,10 @@ namespace MonsterCardTradingGame.Server
                     line.StartsWith("DELETE"))
                 {
                     requestMethod = line.Split(' ')[0];
-                    requestUrl = ParseUrl(line);
-                    Console.WriteLine(requestUrl);
-                    requestParameter=ParseParameter(requestUrl);
-                    Console.WriteLine(requestParameter);
+                    requestUrl = ParseUrl(line,1);
+                   // Console.WriteLine(requestUrl);
+                    requestParameter=ParseUrl(line,2);
+                   // Console.WriteLine(requestParameter);
                 }
 
                 if (line.StartsWith("Content-Length:"))

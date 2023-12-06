@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MonsterCardTradingGame.Server
 {
-    public delegate string RouteAction(string requestBody);
+    public delegate string RouteAction(string requestbody, string requestParameter);
 
     internal class HttpServer
     {
