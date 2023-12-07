@@ -1,0 +1,130 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="MonsterCardTradingGame.BaseClasses.CardStack" Collapsed="true">
+    <Position X="11.75" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\CardStack.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.MonsterCard">
+    <Position X="4" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\MonsterCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.Package" Collapsed="true">
+    <Position X="15.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAIAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\Package.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.Player" Collapsed="true">
+    <Position X="13.5" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAAAAAAAAAACAQAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>BaseClasses\Player.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.SpellCard">
+    <Position X="9.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\SpellCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.DragonCard">
+    <Position X="0.75" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAA=</HashCode>
+      <FileName>MonsterClasses\DragonCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.ElveCard">
+    <Position X="4.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MonsterClasses\ElveCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.GoblinCard">
+    <Position X="8.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MonsterClasses\GoblinCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.KnightCard">
+    <Position X="14" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>MonsterClasses\KnightCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.KrakenCard">
+    <Position X="12.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAA=</HashCode>
+      <FileName>MonsterClasses\KrakenCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.OrkCard">
+    <Position X="6.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MonsterClasses\OrkCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.TrollCard">
+    <Position X="10.25" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQ=</HashCode>
+      <FileName>MonsterClasses\TrollCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.MonsterClasses.WizzardCard">
+    <Position X="2.5" Y="5.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>MonsterClasses\WizzardCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BusinessLogic.GameManager" Collapsed="true">
+    <Position X="13" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BusinessLogic\GameManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BusinessLogic.ShopManager" Collapsed="true">
+    <Position X="15.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BusinessLogic\ShopManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.Card">
+    <Position X="6.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIACAAAAAAAAAAAgAAAQAAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\Card.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.CardDeck" Collapsed="true">
+    <Position X="17.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\CardDeck.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BusinessLogic.TradingManager" Collapsed="true">
+    <Position X="17.25" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BusinessLogic\TradingManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

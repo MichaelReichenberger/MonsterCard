@@ -1,0 +1,53 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="MonsterCardTradingGame.BaseClasses.Card" Collapsed="true">
+    <Position X="12" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAIACAAAAAAAAAAAgAAAQAAAAAAAAIAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\Card.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.MonsterCard" Collapsed="true">
+    <Position X="9.75" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\MonsterCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.SpellCard" Collapsed="true">
+    <Position X="13.5" Y="3.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\SpellCard.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.Player" Collapsed="true">
+    <Position X="16.25" Y="2" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACAAAAAAAAAAAAAAAAACAQAAAAAAAAAAAAIAAAAAAA=</HashCode>
+      <FileName>BaseClasses\Player.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.CardStack" Collapsed="true">
+    <Position X="7.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\CardStack.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.Package" Collapsed="true">
+    <Position X="7" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAIAEAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\Package.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="MonsterCardTradingGame.BaseClasses.CardDeck" Collapsed="true">
+    <Position X="17" Y="4.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>BaseClasses\CardDeck.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
