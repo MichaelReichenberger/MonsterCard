@@ -52,14 +52,14 @@ INSERT INTO card_stacks (stackID, cardID) VALUES
 
 --Create decks table and fill in testdeck
 CREATE TABLE decks (
-    deckid int,
+    deckID int,
     stackid int,
     cardid int,
-    PRIMARY KEY (deckid, stackid, cardid),
-    FOREIGN KEY (cardid) REFERENCES cards(cardid)
+    PRIMARY KEY (deckID, stackID, cardID),
+    FOREIGN KEY (cardID) REFERENCES cards(cardID)
 );
 
-INSERT INTO decks (deckid, stackid, cardid) VALUES
+INSERT INTO decks (deckID, stackID, cardID) VALUES
 (1, 1, 3),
 (1, 1, 7),
 (1, 1, 12),

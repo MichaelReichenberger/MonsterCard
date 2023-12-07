@@ -92,6 +92,13 @@ namespace MonsterCardTradingGame.Server.Routes
             });
 
 
+            //CreateUser Route
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("POST", "/users", (requestbody, requestParameter) =>
+            {
+                return "Test";
+            });
+
             //UserupdatePut Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("PUT", "/users/username", (requestbody, requestParameter) =>
