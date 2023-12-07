@@ -9,35 +9,44 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 {
     internal class UserRepository
     {
+        //DBAcces initialization
         private DBAccess _dbAccess { get; set; }
+
+        //Constructor
         public UserRepository(string connectionString)
         {
             _dbAccess = new DBAccess(connectionString);
         }
 
-        internal void AddUser(int user_id,string username,)
+        //Help functions
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        private int GetNewDeckId()
         {
-            int result = _dbAccess.ExecuteQuery<int>(conn =>
+            int newId = 0;
+            _dbAccess.ExecuteQuery(conn =>
             {
-                using (var cmd = new NpgsqlCommand("INSERT INTO users (username) VALUES (@username);", conn))
+                using (var cmd = new NpgsqlCommand("SELECT COALESCE(MAX(deck_id), 0) + 1 FROM users;", conn))
                 {
-                    cmd.Parameters.AddWithValue("@username", username);
-                    return cmd.ExecuteNonQuery();
+                    newId = Convert.ToInt32(cmd.ExecuteScalar());
                 }
+                return newId;
             });
+            return newId;
         }
 
-
-
-        internal void DeleteUser(){}
-
-        internal void UpdateUser() {}
-
-        internal void CreateUserTable() {}
-
-        internal void GetUserStack(){}
-
-        internal void UpdateUserStack() {}
+        private int GetNewStackId()
+        {
+            int newId = 0;
+            _dbAccess.ExecuteQuery(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT COALESCE(MAX(stack_id), 0) + 1 FROM users;", conn))
+                {
+                    newId = Convert.ToInt32(cmd.ExecuteScalar());
+                }
+                return newId;
+            });
+            return newId;
+        }
 
         internal int? GetUserId(string username)
         {
@@ -51,6 +60,76 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+        internal string getPasswordByUsername(string username)
+        {
+
+            return _dbAccess.ExecuteQuery(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT password FROM users WHERE username=@username;", conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    return Convert.ToString(cmd.ExecuteScalar());
+                }
+            });
+        }
+
+
+        //Add user to DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        internal void AddUser(string username, string password)
+        {
+            // Annahme: Die Funktion GetNewDeckId() und GetNewStackId() generieren eindeutige IDs.
+            int deckId = GetNewDeckId();
+            int stackId = GetNewStackId();
+
+            // Nun wird der neue Benutzer mit den generierten IDs erstellt.
+            _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("INSERT INTO users (username, password,level, coins, deck_id, stack_id) VALUES (@username, @password,@level,@coins, @deckId, @stackId);", conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    cmd.Parameters.AddWithValue("@password", password);
+                    cmd.Parameters.AddWithValue("@deckId", deckId);
+                    cmd.Parameters.AddWithValue("@stackId", stackId);
+                    cmd.Parameters.AddWithValue("@level", 0);
+                    cmd.Parameters.AddWithValue("@coins", 0);
+
+                    return cmd.ExecuteNonQuery();
+                }
+            });
+        }
+
+        //Update user in DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        internal void UpdateUser(string newUsername,string currentUsername, string newPassword)
+        {
+            _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("UPDATE users SET username = @newUsername, password = @password WHERE username = @currentUsername;", conn))
+                {
+                    // Binden der Parameter an den Befehl
+                    cmd.Parameters.AddWithValue("@newUsername", newUsername); // Der neue Benutzername
+                    cmd.Parameters.AddWithValue("@password", newPassword); // Das neue Passwort
+                    cmd.Parameters.AddWithValue("@currentUsername", currentUsername); // Der aktuelle Benutzername
+                    // Führen Sie den Befehl aus
+                    return cmd.ExecuteNonQuery();
+                }
+            });
+        }
+
+        //TODO:
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        internal void DeleteUser(){}
+
+
+        internal void CreateUserTable() {}
+
+        internal void GetUserStack(){}
+
+        internal void UpdateUserStack() {}
+
+        //Get userdata from DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal Dictionary<string, object> GetUserData(string username)
         {
             return _dbAccess.ExecuteQuery(conn =>

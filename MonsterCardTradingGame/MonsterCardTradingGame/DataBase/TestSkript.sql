@@ -1,6 +1,6 @@
 
 --Card insert for whole collection of cards in the game
-INSERT INTO cards (cardid,name, element, damage) VALUES
+INSERT INTO cards (cardID,name, element, damage) VALUES
 (1, 'Goblin', 'Water', 10),
 (2, 'Goblin', 'Fire', 10),
 (3, 'Goblin', 'Normal', 10),
@@ -53,8 +53,8 @@ INSERT INTO card_stacks (stackID, cardID) VALUES
 --Create decks table and fill in testdeck
 CREATE TABLE decks (
     deckID int,
-    stackid int,
-    cardid int,
+    stackID int,
+    cardID int,
     PRIMARY KEY (deckID, stackID, cardID),
     FOREIGN KEY (cardID) REFERENCES cards(cardID)
 );
@@ -65,6 +65,16 @@ INSERT INTO decks (deckID, stackID, cardID) VALUES
 (1, 1, 12),
 (1, 1, 15),
 (1, 1, 19);
+
+
+
+--Altering Tables
+CREATE SEQUENCE user_id_seq;
+
+ALTER TABLE users
+ALTER COLUMN user_id SET DEFAULT nextval('user_id_seq');
+
+ALTER SEQUENCE user_id_seq OWNED BY users.user_id;
 
 
 

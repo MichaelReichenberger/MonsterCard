@@ -29,6 +29,7 @@ namespace MonsterCardTradingGame.Server
                     Console.WriteLine(urlParts[parseType]);
                     if (parseType == 1)
                     {
+                        Console.WriteLine("/" + urlParts[parseType]);
                         return "/"+ urlParts[parseType];
                     }
                     return urlParts[parseType];
