@@ -72,7 +72,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-
         //Add user to DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal void AddUser(string username, string password)
@@ -161,5 +160,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
             });
         }
+
+        //Insert new package in DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     }
 }

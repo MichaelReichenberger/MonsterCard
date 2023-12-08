@@ -138,6 +138,42 @@ namespace MonsterCardTradingGame.Server.Routes
                 }
                 return "HTTP/1.0 401 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" + "Internal Error" + "</h1></body></html>";
             });
+
+
+            //Create package Route
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("POST", "/packages", (requestBody, requestParameter) =>
+            {
+                Parser newParser = new Parser();
+                UserRepository userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
+                var packageList = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(requestBody);
+                if (packageList == null || packageList.Count == 0)
+                {
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + JsonSerializer.Serialize(new { Message = "No package data received" });
+                }
+                else
+                {
+                    foreach (var package in packageList)
+                    {
+                        if (package.TryGetValue("Id", out var uniuque_card_id))
+                        {
+                            Console.WriteLine($"unique_card_id: {uniuque_card_id}");
+                        }
+                        if (package.TryGetValue("Name", out var cardName))
+                        {
+                          (string Element, string Name) Card = newParser.ParseCards(cardName.ToString());
+                            Console.WriteLine($"Cardname: {Card.Name}");
+                            Console.WriteLine($"Element: {Card.Element}");
+                        }
+                        if (package.TryGetValue("Damage", out var cardDamage))
+                        {
+                            Console.WriteLine($"Damage: {cardDamage}");
+                        }
+                    }
+                }
+                return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" + "Request Processed Successfully" + "</h1></body></html>";
+            });
+
         }
     }
 }
