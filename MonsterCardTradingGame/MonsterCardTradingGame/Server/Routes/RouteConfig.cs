@@ -114,9 +114,29 @@ namespace MonsterCardTradingGame.Server.Routes
 
             //Login Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            _router.AddRoute("POST", "/sessions", (requestbody, requestParameter) =>
+            _router.AddRoute("POST", "/sessions", (requestBody, requestParameter) =>
             {
-                return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" + "Sorry not enough Coins" + "</h1></body></html>";
+                var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
+
+                if (userData == null || !userData.TryGetValue("Username", out var username) || !userData.TryGetValue("Password", out var password))
+                {
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
+                }
+                UserRepository userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
+
+                if (password != userRepository.getPasswordByUsername(username))
+                {
+                    Console.WriteLine(password);
+                    Console.WriteLine(userRepository.getPasswordByUsername(username));
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + JsonSerializer.Serialize(new { Message = "Wrong password" });
+
+                }
+                else
+                {
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + JsonSerializer.Serialize(new { Message = "User succesfully logged in" });
+
+                }
+                return "HTTP/1.0 401 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" + "Internal Error" + "</h1></body></html>";
             });
         }
     }

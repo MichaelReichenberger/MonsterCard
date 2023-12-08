@@ -62,7 +62,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         internal string getPasswordByUsername(string username)
         {
-
             return _dbAccess.ExecuteQuery(conn =>
             {
                 using (var cmd = new NpgsqlCommand("SELECT password FROM users WHERE username=@username;", conn))
@@ -162,6 +161,5 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
             });
         }
-
     }
 }
