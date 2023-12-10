@@ -1,18 +1,19 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Text;
 using System.Text.Json;
 using MonsterCardTradingGame.BusinessLogic;
 using MonsterCardTradingGame.DataBase.Repositories;
 using MonsterCardTradingGame.Models.BaseClasses;
+using MonsterCardTradingGame.Server.Sessions;
 using Npgsql.Replication;
-
+using MonsterCardTradingGame.Server.Sessions;
 namespace MonsterCardTradingGame.Server.Routes
 {
     internal class RouteConfig
     {
         private Router _router;
         private GameManager _gameManager;
-
         public RouteConfig(Router router)
         {
             _router = router;
@@ -61,9 +62,17 @@ namespace MonsterCardTradingGame.Server.Routes
                 userDataString.AppendLine("<b>CARDS</b><br>");
 
                 string finalOutput = userDataString.ToString() + cardDataString.ToString();
+                if (finalOutput != null)
+                {
+                    return $"HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Data successfully retrieved <br>User Data for {requestParameter}</h1><p>{finalOutput}</p></body></html>";
 
-                return
-                    $"HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>User Data for {requestParameter}</h1><p>{finalOutput}</p></body></html>";
+                }
+                else
+                {
+                    return $"HTTP/1.0 404 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>User not found</h1><p>{finalOutput}</p></body></html>";
+
+                }
+                
             });
 
             // CreateUser Route
@@ -86,12 +95,12 @@ namespace MonsterCardTradingGame.Server.Routes
                     userRepository.AddUser(username, password);
 
                     return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "User created successfully" });
+                           JsonSerializer.Serialize(new { Message = "User successfully created" });
                 }
                 catch (Exception ex)
                 {
                     return
-                        "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                        "HTTP/1.0 409 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                         JsonSerializer.Serialize(new { Message = $"An error occurred: {ex.Message}" });
                 }
             });
@@ -135,7 +144,7 @@ namespace MonsterCardTradingGame.Server.Routes
                 if (userData == null || !userData.TryGetValue("Username", out var username) ||
                     !userData.TryGetValue("Password", out var password))
                 {
-                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                    return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
                 }
 
@@ -146,14 +155,14 @@ namespace MonsterCardTradingGame.Server.Routes
                 {
                     Console.WriteLine(password);
                     Console.WriteLine(userRepository.getPasswordByUsername(username));
-                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "Wrong password" });
-
                 }
                 else
                 {
-                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "User succesfully logged in" });
+                    var sessionManager = SessionManager.Instance;
+                    var token = sessionManager.GenerateToken(); // Token generieren
+                    var sessionId = sessionManager.CreateSession(token);
+                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = "User successfully logged in", Token = token, SessionId = sessionId });
 
                 }
 
@@ -169,7 +178,16 @@ namespace MonsterCardTradingGame.Server.Routes
                 Parser newParser = new Parser();
                 PackageRepository packageRepository =
                     new PackageRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
-                packageRepository.InsertJsonPackagesIntoDatabase(requestBody);
+                if (newParser.IsValidJson(requestBody))
+                {
+                    packageRepository.InsertJsonPackagesIntoDatabase(requestBody);
+
+                }
+                else
+                {
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = "Input is not correkt" });
+                }
                 var packageList = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(requestBody);
                 if (packageList == null || packageList.Count == 0)
                 {

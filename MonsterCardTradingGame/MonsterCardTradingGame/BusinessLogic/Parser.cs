@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MonsterCardTradingGame.BusinessLogic
@@ -77,6 +78,21 @@ namespace MonsterCardTradingGame.BusinessLogic
                 }
             }
             return "/";
+        }
+
+        public bool IsValidJson(string jsonString)
+        {
+            try
+            {
+                using (JsonDocument.Parse(jsonString))
+                {
+                    return true;
+                }
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
         }
     }
 }

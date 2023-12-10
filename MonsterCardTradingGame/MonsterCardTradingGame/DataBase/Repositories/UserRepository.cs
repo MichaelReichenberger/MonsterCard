@@ -115,16 +115,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        //TODO:
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal void DeleteUser(){}
 
-
-        internal void CreateUserTable() {}
-
-        internal void GetUserStack(){}
-
-        internal void UpdateUserStack() {}
 
         //Get userdata from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -174,5 +165,13 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
             });
         }
+
+        //TODO:
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        internal void DeleteUser() { }
+        internal void GetUserStack() { }
+        internal void UpdateUserStack() { }
     }
 }
+
+
