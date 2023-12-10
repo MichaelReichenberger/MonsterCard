@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using MonsterCardTradingGame.BusinessLogic;
 
 
 namespace MonsterCardTradingGame.Server
@@ -16,30 +17,9 @@ namespace MonsterCardTradingGame.Server
             _client = client;
         }
 
-        
-        private string ParseUrl(string requestLine, int parseType)
-        {
-            string[] parts = requestLine.Split(' ');
-            if (parts.Length > 1)
-            {
-                
-                string[] urlParts = parts[1].Split('/');
-                if (urlParts.Length > parseType)  
-                {
-                    Console.WriteLine(urlParts[parseType]);
-                    if (parseType == 1)
-                    {
-                        Console.WriteLine("/" + urlParts[parseType]);
-                        return "/"+ urlParts[parseType];
-                    }
-                    return urlParts[parseType];
-                }
-            }
-            return "/";
-        }
-
         public void ProcessRequest()
         {
+            Parser _parser = new Parser();
             using var writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
             using var reader = new StreamReader(_client.GetStream());
 
@@ -58,9 +38,9 @@ namespace MonsterCardTradingGame.Server
                     line.StartsWith("DELETE"))
                 {
                     requestMethod = line.Split(' ')[0];
-                    requestUrl = ParseUrl(line,1);
+                    requestUrl = _parser.ParseUrl(line,1);
                    // Console.WriteLine(requestUrl);
-                    requestParameter=ParseUrl(line,2);
+                    requestParameter=_parser.ParseUrl(line,2);
                    // Console.WriteLine(requestParameter);
                 }
 

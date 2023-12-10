@@ -58,6 +58,25 @@ namespace MonsterCardTradingGame.BusinessLogic
             return ("Unknown", "Unknown");
         }
 
+        public string ParseUrl(string requestLine, int parseType)
+        {
+            string[] parts = requestLine.Split(' ');
+            if (parts.Length > 1)
+            {
 
+                string[] urlParts = parts[1].Split('/');
+                if (urlParts.Length > parseType)
+                {
+                    Console.WriteLine(urlParts[parseType]);
+                    if (parseType == 1)
+                    {
+                        Console.WriteLine("/" + urlParts[parseType]);
+                        return "/" + urlParts[parseType];
+                    }
+                    return urlParts[parseType];
+                }
+            }
+            return "/";
+        }
     }
 }

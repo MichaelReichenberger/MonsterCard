@@ -163,5 +163,16 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Insert new package in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        public void InsertJsonPackagesIntoDatabase(string jsonData)
+        {
+            _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("INSERT INTO packages (package_content) VALUES (@json::JSONB)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@json", jsonData);
+                    return cmd.ExecuteNonQuery(); // Rückgabewert ist int
+                }
+            });
+        }
     }
 }
