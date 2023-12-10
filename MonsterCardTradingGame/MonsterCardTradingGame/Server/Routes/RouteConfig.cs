@@ -231,6 +231,8 @@ namespace MonsterCardTradingGame.Server.Routes
                 {
                     newPackageRepository.DeserializeAndInsertCards(newPackageRepository.GetFirstPackage().PackageContent);
                     newPackageRepository.RemoveFirstPackage();
+                    return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
+                           "Request Processed Successfully" + "</h1></body></html>";
                 }
                 Console.WriteLine(newPackageRepository.GetPackageCount());
                 return "Test";

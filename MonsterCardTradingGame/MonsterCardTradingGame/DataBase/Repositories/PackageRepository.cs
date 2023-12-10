@@ -109,12 +109,10 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         cmd.Parameters.AddWithValue("@id", card["Id"].GetString());
                         cmd.Parameters.AddWithValue("@name", card["Name"].GetString());
                         cmd.Parameters.AddWithValue("@damage", card["Damage"].GetDouble()); // Use GetDouble for JsonElement
-
                         return cmd.ExecuteNonQuery();
                     }
                 });
             }
         }
-
     }
 }
