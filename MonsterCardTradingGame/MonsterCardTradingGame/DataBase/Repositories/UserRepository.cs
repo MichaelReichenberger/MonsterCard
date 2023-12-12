@@ -29,6 +29,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 {
                     newId = Convert.ToInt32(cmd.ExecuteScalar());
                 }
+
                 return newId;
             });
             return newId;
@@ -43,6 +44,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 {
                     newId = Convert.ToInt32(cmd.ExecuteScalar());
                 }
+
                 return newId;
             });
             return newId;
@@ -83,7 +85,9 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             // Nun wird der neue Benutzer mit den generierten IDs erstellt.
             _dbAccess.ExecuteQuery<int>(conn =>
             {
-                using (var cmd = new NpgsqlCommand("INSERT INTO users (username, password,level, coins, deck_id, stack_id) VALUES (@username, @password,@level,@coins, @deckId, @stackId);", conn))
+                using (var cmd = new NpgsqlCommand(
+                           "INSERT INTO users (username, password,level, coins, deck_id, stack_id) VALUES (@username, @password,@level,@coins, @deckId, @stackId);",
+                           conn))
                 {
                     cmd.Parameters.AddWithValue("@username", username);
                     cmd.Parameters.AddWithValue("@password", password);
@@ -99,11 +103,13 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Update user in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal void UpdateUser(string newUsername,string currentUsername, string newPassword)
+        internal void UpdateUser(string newUsername, string currentUsername, string newPassword)
         {
             _dbAccess.ExecuteQuery<int>(conn =>
             {
-                using (var cmd = new NpgsqlCommand("UPDATE users SET username = @newUsername, password = @password WHERE username = @currentUsername;", conn))
+                using (var cmd = new NpgsqlCommand(
+                           "UPDATE users SET username = @newUsername, password = @password WHERE username = @currentUsername;",
+                           conn))
                 {
                     // Binden der Parameter an den Befehl
                     cmd.Parameters.AddWithValue("@newUsername", newUsername); // Der neue Benutzername
@@ -123,7 +129,9 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         {
             return _dbAccess.ExecuteQuery(conn =>
             {
-                using (var cmd = new NpgsqlCommand("SELECT u.username, u.coins, u.level, c.card_id, c.name, c.element, c.damage FROM users u JOIN decks d ON u.deck_id = d.deck_id JOIN cards c ON d.card_id = c.card_id WHERE u.username = @username\r\n", conn))
+                using (var cmd = new NpgsqlCommand(
+                           "SELECT u.username, u.coins, u.level, c.card_id, c.name, c.element, c.damage FROM users u JOIN decks d ON u.deck_id = d.deck_id JOIN cards c ON d.card_id = c.card_id WHERE u.username = @username\r\n",
+                           conn))
                 {
                     cmd.Parameters.AddWithValue("@username", username);
                     using (var reader = cmd.ExecuteReader())
@@ -139,6 +147,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                                 result.Add("level", reader["level"]);
                                 userDataSet = true;
                             }
+
                             var cardData = new Dictionary<string, object>();
                             cardData.Add("card_id", reader["card_id"]);
                             cardData.Add("name", reader["name"]);
@@ -146,6 +155,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                             cardData.Add("damage", reader["damage"]);
                             result.Add($"card_{reader["card_id"]}", cardData);
                         }
+
                         return result;
                     }
                 }
@@ -158,7 +168,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         {
             _dbAccess.ExecuteQuery<int>(conn =>
             {
-                using (var cmd = new NpgsqlCommand("INSERT INTO packages (package_content) VALUES (@json::JSONB)", conn))
+                using (var cmd = new NpgsqlCommand("INSERT INTO packages (package_content) VALUES (@json::JSONB)",
+                           conn))
                 {
                     cmd.Parameters.AddWithValue("@json", jsonData);
                     return cmd.ExecuteNonQuery(); // Rückgabewert ist int
@@ -166,11 +177,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        //TODO:
+        //Read user_stats from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal void DeleteUser() { }
-        internal void GetUserStack() { }
-        internal void UpdateUserStack() { }
     }
 }
 

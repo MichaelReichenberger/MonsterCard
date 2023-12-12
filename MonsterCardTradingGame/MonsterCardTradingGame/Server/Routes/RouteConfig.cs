@@ -17,7 +17,7 @@ namespace MonsterCardTradingGame.Server.Routes
         public RouteConfig(Router router)
         {
             _router = router;
-            _gameManager = new GameManager();
+            _gameManager = GameManager.Instance;
             DefineRoutes();
         }
 
@@ -236,6 +236,25 @@ namespace MonsterCardTradingGame.Server.Routes
                 }
                 Console.WriteLine(newPackageRepository.GetPackageCount());
                 return "Test";
+            });
+
+            //Read user_stats Route
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("GET", "/stats", (requestBody, requestParameter) =>
+            {
+                return "Test";
+            });
+
+            _router.AddRoute("POST", "/battle", async (requestBody, requestParameter) =>
+            {
+                await _gameManager.WaitForOtherPlayerAndStartBattleAsync();
+                return "TEst";
+            });
+
+            // In Ihrer RouteConfig-Klasse
+            _router.AddRoute("POST", "/start", (requestBody, requestParameter) =>
+            {
+                return "Battle started.";
             });
         }
     }

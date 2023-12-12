@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using MonsterCardTradingGame.Server.Routes;
-
-using System.Collections.Generic;
-
 namespace MonsterCardTradingGame.Server
 {
     internal class Router
@@ -19,13 +12,18 @@ namespace MonsterCardTradingGame.Server
             routes.Add(new Route(method, url, action));
         }
 
-        public string HandleRequest(string method, string url,string requestbody, string requestParameter)
+        public void AddRoute(string method, string url, AsyncRouteAction action)
+        {
+            routes.Add(new Route(method, url, action));
+        }
+
+        public async Task<string> HandleRequest(string method, string url, string requestBody, string requestParameter)
         {
             foreach (var route in routes)
             {
                 if (route.Method == method && route.Url == url)
                 {
-                    return route.Execute(requestbody, requestParameter);
+                    return await route.Execute(requestBody, requestParameter);
                 }
             }
             return NotFound();

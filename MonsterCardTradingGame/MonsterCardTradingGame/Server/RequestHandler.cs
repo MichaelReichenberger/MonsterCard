@@ -1,9 +1,8 @@
-﻿using MonsterCardTradingGame.Server.Routes;
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Text;
 using MonsterCardTradingGame.BusinessLogic;
+using MonsterCardTradingGame.Server.Routes;
 using MonsterCardTradingGame.Server.Sessions;
 
 namespace MonsterCardTradingGame.Server
@@ -17,7 +16,7 @@ namespace MonsterCardTradingGame.Server
             _client = client;
         }
 
-        public void ProcessRequest()
+        public async void ProcessRequest()
         {
             Parser _parser = new Parser();
             using var writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
@@ -61,7 +60,7 @@ namespace MonsterCardTradingGame.Server
                 return;
             }
 
-            //Read Body if given
+            // Read Body if given
             if (contentLength.HasValue)
             {
                 char[] buffer = new char[contentLength.Value];
@@ -69,12 +68,11 @@ namespace MonsterCardTradingGame.Server
                 body = new string(buffer);
             }
 
-            //Forward Request to Router
+            // Forward Request to Router
             var router = new Router();
             var routeConfig = new RouteConfig(router);
-            var response = router.HandleRequest(requestMethod, requestUrl, body, requestParameter);
-            writer.WriteLine(response + requestParameter);
+            var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter);
+            writer.WriteLine(response);
         }
     }
 }
-
