@@ -210,7 +210,7 @@ echo.
 
 REM --------------------------------------------------
 echo 17) battle
-start /b "kienboec battle" curl -X POST http://localhost:10001/battles --header "Authorization: Bearer kienboec-mtcgToken"
+start /b "kienboec battle" curl -X POST http://localhost:10001/battle --header "Authorization: Bearer test"
 start /b "altenhof battle" curl -X POST http://localhost:10001/battles --header "Authorization: Bearer altenhof-mtcgToken"
 ping localhost -n 10 >NUL 2>NUL
 

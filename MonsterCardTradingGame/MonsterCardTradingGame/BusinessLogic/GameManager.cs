@@ -1,10 +1,11 @@
 ﻿public class GameManager
 {
-    private SemaphoreSlim semaphore = new SemaphoreSlim(0, 2); // Anzahl der Spieler
+    private int playerCount = 0;
     private int? sharedRandomNumber;
+    private readonly object lockObject = new object();
 
     private static GameManager instance = null;
-    private static readonly object lockObject = new object();
+    private static readonly object instanceLockObject = new object();
 
     private GameManager()
     {
@@ -14,7 +15,7 @@
     {
         get
         {
-            lock (lockObject)
+            lock (instanceLockObject)
             {
                 if (instance == null)
                 {
@@ -28,16 +29,39 @@
     public async Task<string> WaitForOtherPlayerAndStartBattleAsync()
     {
         Console.WriteLine("Waiting for another player...");
-        await semaphore.WaitAsync(); 
 
-        if (!sharedRandomNumber.HasValue)
+        lock (lockObject)
         {
-            Random rnd = new Random();
-            sharedRandomNumber = rnd.Next();
-            semaphore.Release(2);
+            playerCount++;
+            if (playerCount >= 2)
+            {
+                if (!sharedRandomNumber.HasValue)
+                {
+                    Random rnd = new Random();
+                    sharedRandomNumber = rnd.Next();
+                }
+                Console.WriteLine($"Shared number: {sharedRandomNumber}");
+                return sharedRandomNumber.ToString();
+            }
         }
-        
-        Console.WriteLine($"Shared number: {sharedRandomNumber}");
-        return sharedRandomNumber.ToString();
+
+        // Warten auf den zweiten Spieler
+        while (true)
+        {
+            await Task.Delay(100); // Kurze Verzögerung, um die CPU nicht zu blockieren
+            lock (lockObject)
+            {
+                if (playerCount >= 2)
+                {
+                    if (!sharedRandomNumber.HasValue)
+                    {
+                        Random rnd = new Random();
+                        sharedRandomNumber = rnd.Next();
+                    }
+                    Console.WriteLine($"Shared number: {sharedRandomNumber}");
+                    return sharedRandomNumber.ToString();
+                }
+            }
+        }
     }
 }
