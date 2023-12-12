@@ -24,7 +24,7 @@
             _isAsync = true;
         }
 
-        public async Task<string> ExecuteAsync(string requestBody, string requestParameter)
+        public async Task<string> Execute(string requestBody, string requestParameter)
         {
             return _isAsync ? await _asyncAction(requestBody, requestParameter)
                 : _action(requestBody, requestParameter);

@@ -11,7 +11,7 @@ namespace MonsterCardTradingGame.Server
     internal class HttpServer
     {
         private TcpListener _listener;
-        
+
         public HttpServer(int port)
         {
             _listener = new TcpListener(IPAddress.Loopback, port);
@@ -27,6 +27,7 @@ namespace MonsterCardTradingGame.Server
                 var clientSocket = _listener.AcceptTcpClient();
                 ThreadPool.QueueUserWorkItem(state =>
                 {
+                    Console.WriteLine($"Handling client on thread: {Thread.CurrentThread.ManagedThreadId}");
                     var handler = new RequestHandler(clientSocket);
                     handler.ProcessRequest();
                 });
