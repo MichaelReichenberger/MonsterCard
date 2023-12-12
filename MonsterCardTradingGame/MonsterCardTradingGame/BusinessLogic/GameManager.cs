@@ -45,10 +45,10 @@
             }
         }
 
-        // Warten auf den zweiten Spieler
+        //Wait for second player
         while (true)
         {
-            await Task.Delay(100); // Kurze Verzögerung, um die CPU nicht zu blockieren
+            await Task.Delay(10);
             lock (lockObject)
             {
                 if (playerCount >= 2)

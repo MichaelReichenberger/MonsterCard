@@ -247,8 +247,9 @@ namespace MonsterCardTradingGame.Server.Routes
 
             _router.AddRoute("POST", "/battle", async (requestBody, requestParameter) =>
             {
-                await _gameManager.WaitForOtherPlayerAndStartBattleAsync();
-                return "TEst";
+                
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       JsonSerializer.Serialize(new { Message = "Battle started:", randomNumber = await _gameManager.WaitForOtherPlayerAndStartBattleAsync() });
             });
 
             // In Ihrer RouteConfig-Klasse
