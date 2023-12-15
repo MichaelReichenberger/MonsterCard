@@ -31,12 +31,11 @@ namespace MonsterCardTradingGame.Server.Sessions
             return "test"; // Erzeugt einen zufälligen, einzigartigen String
         }
 
-        public string CreateSession(string token)
+        public string CreateSession(string token, int userId)
         {
             var sessionId = Guid.NewGuid().ToString();
-            var newSession = new UserSession { SessionId = sessionId, Token = token };
+            var newSession = new UserSession { SessionId = sessionId, Token = token, UserID = userId};
             _sessions.Add(newSession);
-
             Console.WriteLine($"Session erstellt: SessionId={newSession.SessionId}, Token={newSession.Token}");
             return sessionId;
         }
@@ -48,6 +47,34 @@ namespace MonsterCardTradingGame.Server.Sessions
                 return null;
             }
             return _sessions.FirstOrDefault(session => session.Token == token);
+        }
+
+        public int GetUserIdBySessionId(string sessionId)
+        {
+            if (string.IsNullOrEmpty(sessionId))
+            {
+                return -1;
+            }
+            var session = _sessions.FirstOrDefault(session => session.SessionId == sessionId);
+            if (session == null)
+            {
+                return -1;
+            }
+            return session.UserID;
+        }
+
+        public int GetUserIdByToken(string token)
+        {
+            if (string.IsNullOrEmpty(token))
+            {
+                return -1;
+            }
+            var session = _sessions.FirstOrDefault(session => session.Token == token);
+            if (session == null)
+            {
+                return -1;
+            }
+            return session.UserID;
         }
     }
 }

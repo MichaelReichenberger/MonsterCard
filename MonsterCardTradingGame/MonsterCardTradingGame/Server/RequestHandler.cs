@@ -54,7 +54,7 @@ namespace MonsterCardTradingGame.Server
 
             var sessionManager = SessionManager.Instance;
             var session = sessionManager.GetSessionByToken(authToken);
-            if (session == null && requestUrl != "/sessions")
+            if (session == null && requestUrl != "/sessions" && (requestUrl!="/users" && requestMethod != "POST"))
             {
                 writer.WriteLine("HTTP/1.0 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Unauthorized</h1></body></html>");
                 return;
@@ -71,7 +71,7 @@ namespace MonsterCardTradingGame.Server
             // Forward Request to Router
             var router = new Router();
             var routeConfig = new RouteConfig(router);
-            var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter);
+            var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter, sessionManager.GetUserIdByToken(authToken));
             writer.WriteLine(response);
         }
     }

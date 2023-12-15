@@ -6,7 +6,8 @@ namespace MonsterCardTradingGame.Server.Sessions
     {
         public string SessionId { get; set; }
         public string Token { get; set; }
-
+        public int UserID { get; set; }
+        
         public bool Equals(UserSession other)
         {
             if (other == null) return false;

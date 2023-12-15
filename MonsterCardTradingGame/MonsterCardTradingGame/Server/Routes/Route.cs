@@ -24,10 +24,10 @@
             _isAsync = true;
         }
 
-        public async Task<string> Execute(string requestBody, string requestParameter)
+        public async Task<string> Execute(string requestBody, string requestParameter, int userId)
         {
-            return _isAsync ? await _asyncAction(requestBody, requestParameter)
-                : _action(requestBody, requestParameter);
+            return _isAsync ? await _asyncAction(requestBody, requestParameter, userId)
+                : _action(requestBody, requestParameter, userId);
         }
     }
 }

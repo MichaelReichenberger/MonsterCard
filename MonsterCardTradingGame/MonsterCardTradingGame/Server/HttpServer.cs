@@ -5,8 +5,8 @@ using System.Threading;
 
 namespace MonsterCardTradingGame.Server
 {
-    public delegate string RouteAction(string requestBody, string requestParameter);
-    public delegate Task<string> AsyncRouteAction(string requestBody, string requestParameter);
+    public delegate string RouteAction(string requestBody, string requestParameter, int userId);
+    public delegate Task<string> AsyncRouteAction(string requestBody, string requestParameter, int userId);
 
     internal class HttpServer
     {

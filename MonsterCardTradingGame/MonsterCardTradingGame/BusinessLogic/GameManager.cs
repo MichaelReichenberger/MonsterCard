@@ -28,11 +28,14 @@
 
     public async Task<string> WaitForOtherPlayerAndStartBattleAsync()
     {
-        Console.WriteLine("Waiting for another player...");
 
         lock (lockObject)
         {
             playerCount++;
+            if (playerCount == 1)
+            {
+                Console.WriteLine("Waiting for another player...");
+            }
             if (playerCount >= 2)
             {
                 if (!sharedRandomNumber.HasValue)
