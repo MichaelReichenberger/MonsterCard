@@ -26,9 +26,9 @@ namespace MonsterCardTradingGame.Server.Sessions
             }
         }
 
-        public string GenerateToken()
+        public string GenerateToken(string username)
         {
-            return "test"; // Erzeugt einen zufälligen, einzigartigen String
+            return username+"-mctgToken"; // Erzeugt einen zufälligen, einzigartigen String
         }
 
         public string CreateSession(string token, int userId)
@@ -63,8 +63,13 @@ namespace MonsterCardTradingGame.Server.Sessions
             return session.UserID;
         }
 
-        public int GetUserIdByToken(string token)
+        public int GetUserIDByToken(string token)
         {
+            foreach (var Asession in _sessions)
+            {
+                Console.WriteLine(Asession.Token);
+            }
+            Console.WriteLine(token);
             if (string.IsNullOrEmpty(token))
             {
                 return -1;
@@ -72,6 +77,7 @@ namespace MonsterCardTradingGame.Server.Sessions
             var session = _sessions.FirstOrDefault(session => session.Token == token);
             if (session == null)
             {
+                Console.WriteLine("Session nicht gefunden");
                 return -1;
             }
             return session.UserID;

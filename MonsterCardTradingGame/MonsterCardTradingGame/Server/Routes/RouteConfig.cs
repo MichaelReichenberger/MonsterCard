@@ -119,7 +119,7 @@ namespace MonsterCardTradingGame.Server.Routes
                 else
                 {
                     var sessionManager = SessionManager.Instance;
-                    var token = sessionManager.GenerateToken(); // Token generieren
+                    var token = sessionManager.GenerateToken(username); // Token generieren
                     int userId = _userRepository.GetUserId(username).Value;
                     var sessionId = sessionManager.CreateSession(token, userId);
                     return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
@@ -148,50 +148,33 @@ namespace MonsterCardTradingGame.Server.Routes
                     return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Input is not correkt" });
                 }
-                var packageList = JsonSerializer.Deserialize<List<Dictionary<string, object>>>(requestBody);
-                if (packageList == null || packageList.Count == 0)
-                {
-                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "No package data received" });
-                }
-
-                foreach (var package in packageList)
-                {
-                    if (package.TryGetValue("Id", out var uniuque_card_id))
-                    {
-                        Console.WriteLine($"unique_card_id: {uniuque_card_id}");
-                    }
-
-                    if (package.TryGetValue("Name", out var cardName))
-                    {
-                        (string Element, string Name) Card = newParser.ParseCards(cardName.ToString());
-                        Console.WriteLine($"Type: {Card.Name}");
-                        Console.WriteLine($"Element: {Card.Element}");
-                    }
-
-                    if (package.TryGetValue("Damage", out var cardDamage))
-                    {
-                        Console.WriteLine($"Damage: {cardDamage}");
-                    }
-                }
-
-               
             });
 
             //Aquire packages Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/transactions",(requestBody, requestParameter, userId)=>
             {
-
                 if (_packageRepository.GetPackageCount() > 0)
                 {
-                    _packageRepository.TransferPackageToStack(userId);
-                    _packageRepository.RemoveFirstPackage();
-                    return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
-                           "Request Processed Successfully" + "</h1></body></html>";
+                    if (userId > 0)
+                    {
+                        _packageRepository.TransferPackageToStack(userId);
+                        _packageRepository.RemoveFirstPackage();
+                        return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
+                               "Request Processed Successfully" + "</h1></body></html>";
+                    }
+                    else
+                    {
+                        return "HTTP/1.0 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
+                               "Unauthorized" + "</h1></body></html>";
+                    }
+                    
                 }
-                Console.WriteLine(_packageRepository.GetPackageCount());
-                return "Test";
+                else
+                {
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = "No packages available" });
+                }
             });
 
             //Read user_stats Route
@@ -201,8 +184,6 @@ namespace MonsterCardTradingGame.Server.Routes
                
                 return "Test";
             });
-
-
             //Start battle Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/battle", async (requestBody, requestParameter, r) =>

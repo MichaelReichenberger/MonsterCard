@@ -74,6 +74,11 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+        internal string GetUsername(int userId)
+        {
+            return "Test";
+        }
+
         //Add user to DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal void AddUser(string username, string password, string image, string bio)
@@ -99,7 +104,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         cmd.Parameters.AddWithValue("@bio", bio);
                         cmd.Parameters.AddWithValue("@image", image);
                         cmd.Parameters.AddWithValue("@level", 0);
-                        cmd.Parameters.AddWithValue("@coins", 100);
+                        cmd.Parameters.AddWithValue("@coins", 80);
                         return cmd.ExecuteNonQuery();
                     }
                 });

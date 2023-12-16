@@ -71,7 +71,7 @@ namespace MonsterCardTradingGame.Server
             // Forward Request to Router
             var router = new Router();
             var routeConfig = new RouteConfig(router);
-            var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter, sessionManager.GetUserIdByToken(authToken));
+            var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter, sessionManager.GetUserIDByToken(authToken));
             writer.WriteLine(response);
         }
     }
