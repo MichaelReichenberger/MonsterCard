@@ -14,14 +14,14 @@ namespace MonsterCardTradingGame.Server.Routes
     {
         private Router _router;
         private GameManager _gameManager;
-        private UserRepository userRepository;
-        private PackageRepository packageRepository;
+        private UserRepository _userRepository;
+        private PackageRepository _packageRepository;
         public RouteConfig(Router router)
         {
             _router = router;
             _gameManager = GameManager.Instance;
-            userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
-            packageRepository = new PackageRepository("Host = localhost; Username = myuser; Password = mypassword; Database = mydb");
+            _userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
+            _packageRepository = new PackageRepository("Host = localhost; Username = myuser; Password = mypassword; Database = mydb");
             DefineRoutes();
         }
 
@@ -36,45 +36,9 @@ namespace MonsterCardTradingGame.Server.Routes
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("GET", "/users", (requestbody, requestParameter, r) =>
             {
-                var userData = userRepository.GetUserData(requestParameter);
-
-                StringBuilder userDataString = new StringBuilder();
-                StringBuilder cardDataString = new StringBuilder();
-                int cardCount = 1;
-
-                foreach (var kvp in userData)
-                {
-                    if (kvp.Value is Dictionary<string, object> cardData)
-                    {
-                        cardDataString.AppendLine($"<b>Card-{cardCount}:</b><br>");
-                        foreach (var cardKvp in cardData)
-                        {
-                            cardDataString.AppendLine($"{cardKvp.Key}: {cardKvp.Value}<br>");
-                        }
-
-                        cardCount++;
-                    }
-                    else
-                    {
-                        userDataString.AppendLine($"{kvp.Key}: {kvp.Value}<br>");
-
-                    }
-                }
-
-                userDataString.AppendLine("<b>CARDS</b><br>");
-
-                string finalOutput = userDataString.ToString() + cardDataString.ToString();
-                if (finalOutput != null)
-                {
-                    return $"HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Data successfully retrieved <br>User Data for {requestParameter}</h1><p>{finalOutput}</p></body></html>";
-
-                }
-                else
-                {
-                    return $"HTTP/1.0 404 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>User not found</h1><p>{finalOutput}</p></body></html>";
-
-                }
-                
+                var userData = _userRepository.GetUserData(requestParameter);
+                var userAsJson= JsonSerializer.Serialize(userData);
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + userAsJson;
             });
 
             // CreateUser Route
@@ -91,10 +55,9 @@ namespace MonsterCardTradingGame.Server.Routes
                         return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                                JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
                     }
-
-                   
-                    userRepository.AddUser(username, password);
-
+                    string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
+                    string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
+                    _userRepository.AddUser(username, password, image, bio);
                     return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "User successfully created" });
                 }
@@ -114,15 +77,16 @@ namespace MonsterCardTradingGame.Server.Routes
                 {
                     var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
 
-                    if (userData == null || !userData.TryGetValue("Username", out var username) ||
-                        !userData.TryGetValue("Password", out var password))
+                    if (String.IsNullOrEmpty(requestParameter))
                     {
-                        return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                               JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
+                        return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "Missing username" });
                     }
-
-                    userRepository.UpdateUser(username, requestParameter, password);
-
+                    string username = userData.TryGetValue("Name", out var usernameValue) ? usernameValue : "";
+                    string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
+                    string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
+                    string password = userData.TryGetValue("Password", out var passwordValue) ? passwordValue : "";
+                    _userRepository.UpdateUser(username, requestParameter, password, image, bio);
                     return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "User updated successfully" });
                 }
@@ -133,7 +97,7 @@ namespace MonsterCardTradingGame.Server.Routes
                         JsonSerializer.Serialize(new { Message = $"An error occurred: {ex.Message}" });
                 }
             });
-
+             
             //Login Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/sessions", (requestBody, requestParameter, r) =>
@@ -147,16 +111,16 @@ namespace MonsterCardTradingGame.Server.Routes
                            JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
                 }
 
-                if (password != userRepository.getPasswordByUsername(username))
+                if (password != _userRepository.getPasswordByUsername(username))
                 {
                     Console.WriteLine(password);
-                    Console.WriteLine(userRepository.getPasswordByUsername(username));
+                    Console.WriteLine(_userRepository.getPasswordByUsername(username));
                 }
                 else
                 {
                     var sessionManager = SessionManager.Instance;
                     var token = sessionManager.GenerateToken(); // Token generieren
-                    int userId = userRepository.GetUserId(username).Value;
+                    int userId = _userRepository.GetUserId(username).Value;
                     var sessionId = sessionManager.CreateSession(token, userId);
                     return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "User successfully logged in", Token = token, SessionId = sessionId });
@@ -175,8 +139,9 @@ namespace MonsterCardTradingGame.Server.Routes
                 
                 if (newParser.IsValidJson(requestBody))
                 {
-                    packageRepository.InsertJsonPackagesIntoDatabase(requestBody);
-
+                    _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
+                    return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
+                           "Request Processed Successfully" + "</h1></body></html>";
                 }
                 else
                 {
@@ -189,31 +154,28 @@ namespace MonsterCardTradingGame.Server.Routes
                     return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "No package data received" });
                 }
-                else
+
+                foreach (var package in packageList)
                 {
-                    foreach (var package in packageList)
+                    if (package.TryGetValue("Id", out var uniuque_card_id))
                     {
-                        if (package.TryGetValue("Id", out var uniuque_card_id))
-                        {
-                            Console.WriteLine($"unique_card_id: {uniuque_card_id}");
-                        }
+                        Console.WriteLine($"unique_card_id: {uniuque_card_id}");
+                    }
 
-                        if (package.TryGetValue("Name", out var cardName))
-                        {
-                            (string Element, string Name) Card = newParser.ParseCards(cardName.ToString());
-                            Console.WriteLine($"Type: {Card.Name}");
-                            Console.WriteLine($"Element: {Card.Element}");
-                        }
+                    if (package.TryGetValue("Name", out var cardName))
+                    {
+                        (string Element, string Name) Card = newParser.ParseCards(cardName.ToString());
+                        Console.WriteLine($"Type: {Card.Name}");
+                        Console.WriteLine($"Element: {Card.Element}");
+                    }
 
-                        if (package.TryGetValue("Damage", out var cardDamage))
-                        {
-                            Console.WriteLine($"Damage: {cardDamage}");
-                        }
+                    if (package.TryGetValue("Damage", out var cardDamage))
+                    {
+                        Console.WriteLine($"Damage: {cardDamage}");
                     }
                 }
 
-                return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
-                       "Request Processed Successfully" + "</h1></body></html>";
+               
             });
 
             //Aquire packages Route
@@ -221,14 +183,14 @@ namespace MonsterCardTradingGame.Server.Routes
             _router.AddRoute("POST", "/transactions",(requestBody, requestParameter, userId)=>
             {
 
-                if (packageRepository.GetPackageCount() > 0)
+                if (_packageRepository.GetPackageCount() > 0)
                 {
-                    packageRepository.DeserializeAndInsertCards(packageRepository.GetFirstPackage().PackageContent, userId);
-                    packageRepository.RemoveFirstPackage();
+                    _packageRepository.TransferPackageToStack(userId);
+                    _packageRepository.RemoveFirstPackage();
                     return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
                            "Request Processed Successfully" + "</h1></body></html>";
                 }
-                Console.WriteLine(packageRepository.GetPackageCount());
+                Console.WriteLine(_packageRepository.GetPackageCount());
                 return "Test";
             });
 

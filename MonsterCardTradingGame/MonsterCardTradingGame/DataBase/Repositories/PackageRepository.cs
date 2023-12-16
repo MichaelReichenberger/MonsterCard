@@ -9,17 +9,84 @@ using Npgsql;
 using System.Collections.Generic;
 using Npgsql;
 using System.Collections.Generic;
+using MonsterCardTradingGame.BusinessLogic;
+using NpgsqlTypes;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
-    internal class PackageRepository
+    internal class PackageRepository :IRepository
     {
         private DBAccess _dbAccess { get; set; }
+        private Parser _parser;
+        private UserRepository _userRepository;
         public PackageRepository(string connectionString)
         {
             _dbAccess = new DBAccess(connectionString);
+            _userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
+            _parser = new Parser();
         }
-        private UserRepository userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
+
+        public int GetFirstId()
+        {
+            throw new NotImplementedException();
+        }
+
+        public int GetNextId()
+        {
+            return _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT MAX(package_id) FROM packages", conn))
+                {
+                    object result = cmd.ExecuteScalar();
+                    // Überprüfen, ob das Ergebnis NULL ist (d.h. keine Einträge in der Tabelle)
+                    if (result == DBNull.Value)
+                    {
+                        return 1; // Keine Einträge vorhanden, also 1 zurückgeben
+                    }
+                    else
+                    {
+                        return Convert.ToInt32(result) + 1; // MAX(package_id) + 1 zurückgeben
+                    }
+                }
+            });
+        }
+
+
+        //Insert package to DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        public void DeserializeAndInsertPackageToDB(string packageContent)
+        {
+            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+            var cards = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(packageContent, options);
+            int nextId = GetNextId();
+            foreach (var card in cards)
+            {
+                (string Element, string Name) CardTuple = _parser.ParseCards(card["Name"].GetString());
+                double damage = card["Damage"].GetDouble();
+                Console.WriteLine(damage);
+                try
+                {
+                    _dbAccess.ExecuteQuery<int>(conn =>
+                    {
+                        using (var cmd = new NpgsqlCommand(
+                                   "INSERT INTO packages (package_id, unique_id, name, element, damage) VALUES (@package_id, @unique_id, @name, @element, @damage)",
+                                   conn))
+                        {
+                            cmd.Parameters.AddWithValue("@package_id", nextId);
+                            cmd.Parameters.AddWithValue("@unique_id", card["Id"].ValueKind != JsonValueKind.Null ? card["Id"].GetString() : DBNull.Value);
+                            cmd.Parameters.AddWithValue("@name", CardTuple.Name);
+                            cmd.Parameters.AddWithValue("@element", CardTuple.Element);
+                            cmd.Parameters.AddWithValue("@damage", card["Damage"].GetDouble());
+                            return cmd.ExecuteNonQuery();
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                }
+            }
+        }
 
 
         //Get count of packages in DB
@@ -45,29 +112,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
            
         }
 
-
-        //Insert JSON content in packages table
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public void InsertJsonPackagesIntoDatabase(string jsonData)
-        {
-            try
-            {
-                _dbAccess.ExecuteQuery<int>(conn =>
-                {
-                    using (var cmd = new NpgsqlCommand("INSERT INTO packages (package_content) VALUES (@json::JSONB)", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@json", jsonData);
-                        return cmd.ExecuteNonQuery(); // Rückgabewert ist int
-                    }
-                });
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            
-        }
-
         //Remove first package from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void RemoveFirstPackage()
@@ -76,7 +120,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             {
                 _dbAccess.ExecuteQuery<int>(conn =>
                 {
-                    using (var cmd = new NpgsqlCommand("DELETE FROM packages WHERE package_id IN (SELECT package_id FROM packages ORDER BY package_id ASC LIMIT 1)", conn))
+                    using (var cmd = new NpgsqlCommand("DELETE FROM packages WHERE package_id IN (SELECT MIN(package_id) FROM packages)", conn))
                     {
                         return cmd.ExecuteNonQuery();
                     }
@@ -87,81 +131,30 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 Console.WriteLine(e);
                 throw;
             }
-            
         }
-
-
-        //Get first package from DB
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public (string PackageId, string PackageContent) GetFirstPackage()
-        {
-            try
-            {
-                return _dbAccess.ExecuteQuery(conn =>
-                {
-                    using (var cmd = new NpgsqlCommand(
-                               "SELECT package_id, package_content FROM packages ORDER BY package_id ASC LIMIT 1",
-                               conn))
-                    {
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                string packageId = reader.GetString(reader.GetOrdinal("package_id"));
-                                string packageContent = reader.GetString(reader.GetOrdinal("package_content"));
-                                return (PackageId: packageId, PackageContent: packageContent);
-                            }
-                            else
-                            {
-                                return (PackageId: null,
-                                    PackageContent: null); // or throw an exception if a row must exist
-                            }
-                        }
-                    }
-                });
-            }
-            catch(Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return (PackageId: null, PackageContent: null);
-            }
- 
-        }
-
-
 
 
         //Move cards from packages Table in card_stacks table after acquirement
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public void DeserializeAndInsertCards(string packageContent, int userId)
+        public void TransferPackageToStack(int userId)
         {
-            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var cards = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(packageContent, options);
-
-            foreach (var card in cards)
+            try
             {
-                try
+                _dbAccess.ExecuteQuery<int>(conn =>
                 {
-                    // Insert each card into the cards_table
-                    _dbAccess.ExecuteQuery<int>(conn =>
+                    using (var cmd = new NpgsqlCommand(
+                               "INSERT INTO card_stacks (user_id, unique_id, name, element, damage) SELECT @user_id, unique_id, name, element, damage FROM packages WHERE package_id IN (SELECT MIN(package_id) FROM packages)",
+                               conn))
                     {
-                        using (var cmd = new NpgsqlCommand(
-                                   "INSERT INTO card_stacks (stack_id,unique_id, name, damage) VALUES (@stackId,@id, @name, @damage)",
-                                   conn))
-                        {
-                            cmd.Parameters.AddWithValue("@stackId", userRepository.getStackIsByUserId(userId));
-                            cmd.Parameters.AddWithValue("@id", card["Id"].GetString());
-                            cmd.Parameters.AddWithValue("@name", card["Name"].GetString());
-                            cmd.Parameters.AddWithValue("@damage",
-                                card["Damage"].GetDouble()); // Use GetDouble for JsonElement
-                            return cmd.ExecuteNonQuery();
-                        }
-                    });
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e.Message);
-                }
+                        cmd.Parameters.AddWithValue("@user_id", userId);
+                        return cmd.ExecuteNonQuery();
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw;
             }
         }
     }
