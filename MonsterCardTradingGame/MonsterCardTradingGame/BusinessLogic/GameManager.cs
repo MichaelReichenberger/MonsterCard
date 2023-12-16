@@ -1,60 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MonsterCardTradingGame.Models.BaseClasses;
-
-namespace MonsterCardTradingGame.BusinessLogic
+﻿public class GameManager
 {
-    internal class GameManager
-    {
-        public void GameLoop(Player Player1, Player Player2)
-        {
-            Console.WriteLine("STARTED GAME");
-            var randomVar = new Random();
-            while (Player1.CardDeck.Deck.Any() && !Player2.CardDeck.Deck.Any())
-            {
-                string Card1Choice = SelectCard(Player1, Player1.CardDeck);
-                string Card2Choice = SelectCard(Player2, Player1.CardDeck);
-                Card ChoosenCard1 = Player1.CardDeck.Deck[Card1Choice];
-                Card ChoosenCard2 = Player2.CardDeck.Deck[Card2Choice];
+    private int playerCount = 0;
+    private int? sharedRandomNumber;
+    private readonly object lockObject = new object();
 
-                if (Fight(ChoosenCard1, ChoosenCard2) == "Card1Wins")
+    private static GameManager instance = null;
+    private static readonly object instanceLockObject = new object();
+
+    private GameManager()
+    {
+    }
+
+    public static GameManager Instance
+    {
+        get
+        {
+            lock (instanceLockObject)
+            {
+                if (instance == null)
                 {
-                    Player2.CardDeck.Deck.Remove(ChoosenCard2.Name);
+                    instance = new GameManager();
                 }
-                else if (Fight(ChoosenCard1, ChoosenCard2) == "Card2Wins")
-                {
-                    Player1.CardDeck.Deck.Remove(ChoosenCard1.Name);
-                }
-                else
-                {
-                    
-                    Player1.CardDeck.Deck.Remove(ChoosenCard1.Name);
-                    Player2.CardDeck.Deck.Remove(ChoosenCard2.Name);
-                }
+                return instance;
             }
         }
-        public string SelectCard(Player Player, CardDeck CardDeck)
+    }
+
+    public async Task<string> WaitForOtherPlayerAndStartBattleAsync()
+    {
+
+        lock (lockObject)
         {
-            Console.WriteLine(Player.Name + " Please select the Card you want to play: ");
-            string cardChoice = Console.ReadLine();
-            return cardChoice;
+            playerCount++;
+            if (playerCount == 1)
+            {
+                Console.WriteLine("Waiting for another player...");
+            }
+            if (playerCount >= 2)
+            {
+                if (!sharedRandomNumber.HasValue)
+                {
+                    Random rnd = new Random();
+                    sharedRandomNumber = rnd.Next();
+                }
+                Console.WriteLine($"Shared number: {sharedRandomNumber}");
+                return sharedRandomNumber.ToString();
+            }
         }
-        public string Fight(Card ChoosenCard1, Card ChoosenCard2)
+
+        //Wait for second player
+        while (true)
         {
-            if (ChoosenCard1.attack(ChoosenCard2) > ChoosenCard2.attack(ChoosenCard1))
+            await Task.Delay(10);
+            lock (lockObject)
             {
-                return "Card1Wins";
-            }
-            else if (ChoosenCard1.attack(ChoosenCard2) < ChoosenCard2.attack(ChoosenCard1))
-            {
-                return "Card2Wins";
-            }
-            else
-            {
-                return "Both Dead";
+                if (playerCount >= 2)
+                {
+                    if (!sharedRandomNumber.HasValue)
+                    {
+                        Random rnd = new Random();
+                        sharedRandomNumber = rnd.Next();
+                    }
+                    Console.WriteLine($"Shared number: {sharedRandomNumber}");
+                    return sharedRandomNumber.ToString();
+                }
             }
         }
     }

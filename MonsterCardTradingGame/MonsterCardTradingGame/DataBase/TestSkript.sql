@@ -76,6 +76,13 @@ ALTER COLUMN user_id SET DEFAULT nextval('user_id_seq');
 
 ALTER SEQUENCE user_id_seq OWNED BY users.user_id;
 
+CREATE SEQUENCE package_id_seq;
+
+ALTER TABLE packages
+ALTER COLUMN package_id SET DEFAULT nextval('package_id_seq');
+
+ALTER SEQUENCE package_id_seq OWNED BY packages.package_id;
+
 
 
 

@@ -1,9 +1,9 @@
-﻿using MonsterCardTradingGame.Server.Routes;
-using System;
+﻿using System;
 using System.IO;
 using System.Net.Sockets;
-using System.Text;
-
+using MonsterCardTradingGame.BusinessLogic;
+using MonsterCardTradingGame.Server.Routes;
+using MonsterCardTradingGame.Server.Sessions;
 
 namespace MonsterCardTradingGame.Server
 {
@@ -16,30 +16,9 @@ namespace MonsterCardTradingGame.Server
             _client = client;
         }
 
-        
-        private string ParseUrl(string requestLine, int parseType)
+        public async void ProcessRequest()
         {
-            string[] parts = requestLine.Split(' ');
-            if (parts.Length > 1)
-            {
-                
-                string[] urlParts = parts[1].Split('/');
-                if (urlParts.Length > parseType)  
-                {
-                    Console.WriteLine(urlParts[parseType]);
-                    if (parseType == 1)
-                    {
-                        Console.WriteLine("/" + urlParts[parseType]);
-                        return "/"+ urlParts[parseType];
-                    }
-                    return urlParts[parseType];
-                }
-            }
-            return "/";
-        }
-
-        public void ProcessRequest()
-        {
+            Parser _parser = new Parser();
             using var writer = new StreamWriter(_client.GetStream()) { AutoFlush = true };
             using var reader = new StreamReader(_client.GetStream());
 
@@ -49,28 +28,39 @@ namespace MonsterCardTradingGame.Server
             string requestParameter = string.Empty;
             string body = string.Empty;
             int? contentLength = null;
+            string authToken = null;
 
-            //Reading the Header
+            // Read the Header
             while (!string.IsNullOrEmpty(line = reader.ReadLine()))
             {
-                //Console.WriteLine(line);
                 if (line.StartsWith("GET") || line.StartsWith("POST") || line.StartsWith("PUT") ||
                     line.StartsWith("DELETE"))
                 {
                     requestMethod = line.Split(' ')[0];
-                    requestUrl = ParseUrl(line,1);
-                   // Console.WriteLine(requestUrl);
-                    requestParameter=ParseUrl(line,2);
-                   // Console.WriteLine(requestParameter);
+                    requestUrl = _parser.ParseUrl(line, 1);
+                    requestParameter = _parser.ParseUrl(line, 2);
                 }
 
                 if (line.StartsWith("Content-Length:"))
                 {
                     contentLength = int.Parse(line.Split(' ')[1]);
                 }
+
+                if (line.StartsWith("Authorization: Bearer"))
+                {
+                    authToken = line.Substring("Authorization: Bearer".Length).Trim();
+                }
             }
 
-            // Read the Body only when reading the Header is finished
+            var sessionManager = SessionManager.Instance;
+            var session = sessionManager.GetSessionByToken(authToken);
+            if (session == null && requestUrl != "/sessions" && (requestUrl!="/users" && requestMethod != "POST"))
+            {
+                writer.WriteLine("HTTP/1.0 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Unauthorized</h1></body></html>");
+                return;
+            }
+
+            // Read Body if given
             if (contentLength.HasValue)
             {
                 char[] buffer = new char[contentLength.Value];
@@ -78,10 +68,11 @@ namespace MonsterCardTradingGame.Server
                 body = new string(buffer);
             }
 
+            // Forward Request to Router
             var router = new Router();
             var routeConfig = new RouteConfig(router);
-            var response = router.HandleRequest(requestMethod, requestUrl,body, requestParameter);
-            writer.WriteLine(response + requestParameter);
+            var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter, sessionManager.GetUserIDByToken(authToken));
+            writer.WriteLine(response);
         }
     }
 }
