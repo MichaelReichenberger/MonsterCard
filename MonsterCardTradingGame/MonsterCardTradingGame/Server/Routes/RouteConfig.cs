@@ -16,12 +16,14 @@ namespace MonsterCardTradingGame.Server.Routes
         private GameManager _gameManager;
         private UserRepository _userRepository;
         private PackageRepository _packageRepository;
+        private CardsRepository _cardsRepository;
         public RouteConfig(Router router)
         {
             _router = router;
             _gameManager = GameManager.Instance;
             _userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
             _packageRepository = new PackageRepository("Host = localhost; Username = myuser; Password = mypassword; Database = mydb");
+            _cardsRepository = new CardsRepository("Host = localhost; Username = myuser; Password = mypassword; Database = mydb");
             DefineRoutes();
         }
 
@@ -126,8 +128,8 @@ namespace MonsterCardTradingGame.Server.Routes
                            JsonSerializer.Serialize(new { Message = "User successfully logged in", Token = token, SessionId = sessionId });
                 }
 
-                return "HTTP/1.0 401 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
-                       "Internal Error" + "</h1></body></html>";
+                return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       JsonSerializer.Serialize(new { Message = "Internal Error" });
             });
 
 
@@ -140,8 +142,8 @@ namespace MonsterCardTradingGame.Server.Routes
                 if (newParser.IsValidJson(requestBody))
                 {
                     _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
-                    return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
-                           "Request Processed Successfully" + "</h1></body></html>";
+                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = "Request processed successfully" });
                 }
                 else
                 {
@@ -160,13 +162,13 @@ namespace MonsterCardTradingGame.Server.Routes
                     {
                         _packageRepository.TransferPackageToStack(userId);
                         _packageRepository.RemoveFirstPackage();
-                        return "HTTP/1.0 200 OK\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
-                               "Request Processed Successfully" + "</h1></body></html>";
+                        return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "Request processed successfully" });
                     }
                     else
                     {
-                        return "HTTP/1.0 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>" +
-                               "Unauthorized" + "</h1></body></html>";
+                        return "HTTP/1.0 412 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                            JsonSerializer.Serialize(new { Message = "Invalid user_id" });
                     }
                     
                 }
@@ -174,6 +176,22 @@ namespace MonsterCardTradingGame.Server.Routes
                 {
                     return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "No packages available" });
+                }
+            });
+
+            //Get user cards Route
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("GET", "/cards", (requestBody, requestParameter, userId) =>
+            {
+                if (userId > 0)
+                {
+                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = _cardsRepository.GetCardsFromDB(userId) });
+                }
+                else
+                {
+                    return "HTTP/1.0 412 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = "Invalid user_id" });
                 }
             });
 

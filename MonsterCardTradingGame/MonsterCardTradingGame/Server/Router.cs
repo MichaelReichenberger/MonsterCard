@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 using MonsterCardTradingGame.Server.Routes;
 namespace MonsterCardTradingGame.Server
@@ -31,7 +32,8 @@ namespace MonsterCardTradingGame.Server
 
         private string NotFound()
         {
-            return "HTTP/1.0 404 Not Found\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>404 Not Found</h1></body></html>";
+            return "HTTP/1.0 404 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                   JsonSerializer.Serialize(new { Message = "Not found" });
         }
     }
 }
