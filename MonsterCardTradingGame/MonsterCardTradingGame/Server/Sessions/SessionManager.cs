@@ -65,10 +65,6 @@ namespace MonsterCardTradingGame.Server.Sessions
 
         public int GetUserIDByToken(string token)
         {
-            foreach (var Asession in _sessions)
-            {
-                Console.WriteLine(Asession.Token);
-            }
             Console.WriteLine(token);
             if (string.IsNullOrEmpty(token))
             {

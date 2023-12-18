@@ -14,7 +14,7 @@ using NpgsqlTypes;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
-    internal class PackageRepository :IRepository
+    public class PackageRepository :IRepository
     {
         private DBAccess _dbAccess { get; set; }
         private Parser _parser;
@@ -84,6 +84,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+                    throw new Exception("Error while inserting package to DB");
                 }
             }
         }
@@ -107,9 +108,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw;
+                throw new Exception("Error while getting package count");
             }
-           
         }
 
         //Remove first package from DB
@@ -129,7 +129,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                throw;
+                throw new Exception("Error while removing first package");
             }
         }
 
@@ -154,7 +154,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                throw;
+                throw new Exception("Error while transferring package to stack");
             }
         }
     }

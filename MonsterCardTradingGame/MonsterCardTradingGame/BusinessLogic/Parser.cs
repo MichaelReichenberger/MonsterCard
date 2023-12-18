@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MonsterCardTradingGame.Models.BaseClasses;
 
 namespace MonsterCardTradingGame.BusinessLogic
 {
-    internal class Parser
+    public class Parser
     {
         public (string Element, string Creature) ParseCards(string cardName)
         {
@@ -94,5 +95,6 @@ namespace MonsterCardTradingGame.BusinessLogic
                 return false;
             }
         }
+
     }
 }

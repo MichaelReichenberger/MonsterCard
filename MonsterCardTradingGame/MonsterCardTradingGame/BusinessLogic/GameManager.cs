@@ -1,9 +1,12 @@
-﻿public class GameManager
+﻿using MonsterCardTradingGame.Models.BaseClasses;
+
+public class GameManager
 {
     private int playerCount = 0;
     private int? sharedRandomNumber;
     private readonly object lockObject = new object();
-
+    private List<Card> _playerOneCards;
+    private List<Card> _playerTwoCards;
     private static GameManager instance = null;
     private static readonly object instanceLockObject = new object();
 
@@ -28,7 +31,6 @@
 
     public async Task<string> WaitForOtherPlayerAndStartBattleAsync()
     {
-
         lock (lockObject)
         {
             playerCount++;

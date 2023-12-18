@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Net.Sockets;
+using System.Text.Json;
 using MonsterCardTradingGame.BusinessLogic;
 using MonsterCardTradingGame.Server.Routes;
 using MonsterCardTradingGame.Server.Sessions;
@@ -56,7 +57,8 @@ namespace MonsterCardTradingGame.Server
             var session = sessionManager.GetSessionByToken(authToken);
             if (session == null && requestUrl != "/sessions" && (requestUrl!="/users" && requestMethod != "POST"))
             {
-                writer.WriteLine("HTTP/1.0 401 Unauthorized\r\nContent-Type: text/html; charset=utf-8\r\n\r\n<html><body><h1>Unauthorized</h1></body></html>");
+                writer.WriteLine("HTTP/1.0 401 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                 JsonSerializer.Serialize(new { Message = "Access token is missing or invalid" }));
                 return;
             }
 
@@ -71,6 +73,7 @@ namespace MonsterCardTradingGame.Server
             // Forward Request to Router
             var router = new Router();
             var routeConfig = new RouteConfig(router);
+            Console.WriteLine($"Handling client on thread: {Thread.CurrentThread.ManagedThreadId}");
             var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter, sessionManager.GetUserIDByToken(authToken));
             writer.WriteLine(response);
         }
