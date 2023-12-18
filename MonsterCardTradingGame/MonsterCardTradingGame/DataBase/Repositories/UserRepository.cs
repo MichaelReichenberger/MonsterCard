@@ -255,17 +255,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
         }
 
-        public void DeleteById(int id)
-        {
-            _dbAccess.ExecuteQuery(conn =>
-            {
-                using (var cmd = new NpgsqlCommand("DELETE FROM users WHERE user_id = @userId", conn))
-                {
-                    cmd.Parameters.AddWithValue("@userId", id);
-                    return cmd.ExecuteNonQuery();
-                }
-            });
-        });
     }
 }
 
