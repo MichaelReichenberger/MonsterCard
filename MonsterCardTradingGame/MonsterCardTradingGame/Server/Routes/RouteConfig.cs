@@ -315,7 +315,7 @@ namespace MonsterCardTradingGame.Server.Routes
                     JsonSerializer.Serialize(new { Message = "Error deleting deal" });
             });
 
-
+            
             //Configure deck Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("PUT", "/deck", (requestBody, requestParameter, userId) =>
