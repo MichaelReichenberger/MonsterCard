@@ -240,7 +240,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 Console.WriteLine(e);
                 throw new Exception("Error while getting user data");
             }
-           
         }
     }
 }

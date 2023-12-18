@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MonsterCardTradingGame.Models.BaseClasses;
 
 namespace MonsterCardTradingGame.BusinessLogic
 {
@@ -94,5 +95,6 @@ namespace MonsterCardTradingGame.BusinessLogic
                 return false;
             }
         }
+
     }
 }

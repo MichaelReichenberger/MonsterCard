@@ -57,6 +57,45 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+        public string GetDeckInfosFromDB(int userId)
+        {
+            return _dbAccess.ExecuteQuery<string>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT * FROM card_stacks WHERE unique_id IN (SELECT unique_id FROM decks WHERE user_id = @userId)", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var result = new StringBuilder();
+                        while (reader.Read())
+                        {
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                            }
+                            result.AppendLine();
+                        }
+                        return result.ToString();
+                    }
+                }
+            });
+        }
+
+        public bool CheckIfUserOwnsCard(int userId, string cardId)
+        {
+            return _dbAccess.ExecuteQuery<bool>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand(
+                           "SELECT EXISTS(SELECT 1 FROM card_stacks WHERE user_id = @userId AND unique_id = @cardId)",
+                           conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    cmd.Parameters.AddWithValue("@cardId", cardId);
+                    return (bool)cmd.ExecuteScalar();
+                }
+            });
+        }
+
         public void TransferReceivedCard(string dealId, string receivedCard)
         {
             int userId = _tradingsRepository.GetSenderIdByDealId(dealId);

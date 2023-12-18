@@ -85,5 +85,46 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
             });
         }
+
+        public void DeleteDeckByUserId(int userId)
+        {
+            try
+            {
+                _dbAccess.ExecuteQuery<int>(conn =>
+                {
+                    using (var cmd = new NpgsqlCommand("DELETE FROM decks WHERE user_id = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        return cmd.ExecuteNonQuery();
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new Exception("Error while removing deck");
+            }
+        }
+
+        public int CountCardsInDeck(int userId)
+        {
+            try
+            {
+                return _dbAccess.ExecuteQuery<int>(conn =>
+                {
+                    using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM decks WHERE user_id = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        // Safely convert the result to int
+                        return Convert.ToInt32(cmd.ExecuteScalar());
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new Exception("Error while getting deck count");
+            }
+        }
     }
 }

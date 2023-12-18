@@ -305,10 +305,17 @@ namespace MonsterCardTradingGame.Server.Routes
             {
                 try
                 {
+                    
                     var CardIds = JsonSerializer.Deserialize<List<string>>(requestBody);
                     if (CardIds.Count == 4)
                     {
-                        _deckRepository.DeleteDeckByUserId(userId);
+                        foreach (var cardId in CardIds)
+                        {
+                            if (!_cardsRepository.CheckIfUserOwnsCard(userId, cardId))
+                                return
+                                    "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                    JsonSerializer.Serialize(new { Message = "You dont own this card!" });
+                        }
                         _deckRepository.InsertCardsIntoDeck(userId, CardIds);
                         return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                                JsonSerializer.Serialize(new { Message = "Deck successfully configured" });
@@ -316,7 +323,7 @@ namespace MonsterCardTradingGame.Server.Routes
 
                     return
                         "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                        JsonSerializer.Serialize(new { Message = "Error configuring deck, please provide 4 cards for the deck" });
+                        JsonSerializer.Serialize(new { Message = "Error configuring deck" });
                 }
                 catch (Exception e)
                 {
@@ -352,7 +359,7 @@ namespace MonsterCardTradingGame.Server.Routes
 
             //Read user_stats Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            _router.AddRoute("GET", "/stats", (requestBody, requestParameter, userId) =>
+            _router.AddRoute("GET", "/stats",(requestBody, requestParameter, userId) =>
             {
                 return
                     "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
@@ -368,6 +375,7 @@ namespace MonsterCardTradingGame.Server.Routes
                     "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                     JsonSerializer.Serialize(new { Message = _statsRepository.GetAllStatsOrderedByElo() });
             });
+
 
             //Start battle Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

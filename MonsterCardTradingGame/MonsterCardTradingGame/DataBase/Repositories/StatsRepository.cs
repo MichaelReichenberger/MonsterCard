@@ -33,11 +33,14 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
+
+        //Get single users stats from DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string GetStatsFromDB(int userId)
         {
             return _dbAccess.ExecuteQuery<string>(conn =>
             {
-                using (var cmd = new NpgsqlCommand("SELECT * FROM stats WHERE user_id = @userId", conn))
+                using (var cmd = new NpgsqlCommand("SELECT * FROM user_stats WHERE user_id = @userId", conn))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
                     using (var reader = cmd.ExecuteReader())
@@ -57,11 +60,14 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+
+        //Get scoreboard from DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string GetAllStatsOrderedByElo()
         {
             return _dbAccess.ExecuteQuery<string>(conn =>
             {
-                using (var cmd = new NpgsqlCommand("SELECT * FROM stats ORDER BY elo DESC", conn))
+                using (var cmd = new NpgsqlCommand("SELECT * FROM user_stats ORDER BY elo DESC", conn))
                 {
                     using (var reader = cmd.ExecuteReader())
                     {
