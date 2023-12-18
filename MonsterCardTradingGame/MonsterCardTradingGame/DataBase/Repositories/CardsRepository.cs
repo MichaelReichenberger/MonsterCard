@@ -57,6 +57,21 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+        public void TransferReceivedCard(string dealId, string receivedCard)
+        {
+            int userId = _tradingsRepository.GetSenderIdByDealId(dealId);
+            _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand(
+                           "UPDATE card_stacks SET user_id = @userId WHERE unique_id = @receivedCard", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    cmd.Parameters.AddWithValue("@receivedCard", receivedCard);
+                    return cmd.ExecuteNonQuery();
+                }
+            });
+        }
+
         //Transfer card after deal is accepted
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void TransferCard(string dealId, int userId)

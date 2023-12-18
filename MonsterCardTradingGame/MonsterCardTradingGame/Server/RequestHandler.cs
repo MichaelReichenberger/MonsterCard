@@ -60,7 +60,6 @@ namespace MonsterCardTradingGame.Server
                 writer.WriteLine("HTTP/1.0 401 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                                  JsonSerializer.Serialize(new { Message = "Access token is missing or invalid" }));
                 return;
-                
             }
 
             // Read Body if given

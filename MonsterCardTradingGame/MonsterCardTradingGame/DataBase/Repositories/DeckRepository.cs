@@ -22,7 +22,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         }
         public int GetFirstId()
         {
-            throw new NotImplementedException();
+           throw new NotImplementedException();
         }
 
         public int GetNextId()
@@ -30,9 +30,55 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
-        public void InsertCardsIntoDeck(int userId, string reuestBody)
+        public void InsertCardsIntoDeck(int userId, List<string> cardIds)
         {
-            
+            foreach (var CardId in cardIds)
+            {
+                try
+                {
+                    _dbAccess.ExecuteQuery<int>(conn =>
+                    {
+                        using (var cmd =
+                               new NpgsqlCommand(
+                                   "INSERT INTO decks (user_id, unique_id) VALUES (@userId, @cardId)",
+                                   conn))
+                        {
+                            cmd.Parameters.AddWithValue("@userId", userId);
+                            cmd.Parameters.AddWithValue("@cardId", CardId);
+                            return cmd.ExecuteNonQuery();
+                        }
+                    });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+            }
+        }
+
+        public string GetDeckByUserId(int userId)
+        {
+            return _dbAccess.ExecuteQuery<string>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT unique_id FROM decks WHERE user_id = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var result = new StringBuilder();
+                        while (reader.Read())
+                        {
+                            for (int i = 0; i < reader.FieldCount; i++)
+                            {
+                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                            }
+                            result.AppendLine();
+                        }
+                        return result.ToString();
+                    }
+                }
+            });
         }
     }
 }

@@ -8,7 +8,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 {
     internal interface IRepository
     {
-        public int GetFirstId();
-        public int GetNextId();
+        protected int GetFirstId();
+        protected int GetNextId();
     }
 }
