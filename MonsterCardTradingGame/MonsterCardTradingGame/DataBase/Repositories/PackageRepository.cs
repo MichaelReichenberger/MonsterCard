@@ -14,7 +14,7 @@ using NpgsqlTypes;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
-    internal class PackageRepository :IRepository
+    public class PackageRepository :IRepository
     {
         private DBAccess _dbAccess { get; set; }
         private Parser _parser;

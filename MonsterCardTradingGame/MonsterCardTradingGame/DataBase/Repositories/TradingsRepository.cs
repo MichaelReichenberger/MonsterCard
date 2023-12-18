@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
-    internal class TradingsRepository : IRepository
+    public class TradingsRepository : IRepository
     {
 
 
@@ -30,6 +30,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         {
             throw new NotImplementedException();
         }
+
+        
 
 
         //Insert offer into tradings table
@@ -96,7 +98,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Remove deal from tradings table
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public void RemoveDeal(string dealId)
+        public void DeleteById(string dealId)
         {
             _dbAccess.ExecuteQuery<int>(conn =>
             {

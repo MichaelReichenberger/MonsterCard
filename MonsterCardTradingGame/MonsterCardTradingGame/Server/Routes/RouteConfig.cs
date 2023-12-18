@@ -10,7 +10,7 @@ using Npgsql.Replication;
 using MonsterCardTradingGame.Server.Sessions;
 namespace MonsterCardTradingGame.Server.Routes
 {
-    internal class RouteConfig
+    public class RouteConfig
     {
         private Router _router;
         private GameManager _gameManager;
@@ -185,7 +185,7 @@ namespace MonsterCardTradingGame.Server.Routes
                     {
                         if (_userRepository.GetCoins(userId) < 20)
                         {
-                            return "HTTP/1.0 412 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                            return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                                    JsonSerializer.Serialize(new { Message = "Not enough coins" });
                         }
                         
@@ -196,7 +196,7 @@ namespace MonsterCardTradingGame.Server.Routes
                                JsonSerializer.Serialize(new { Message = "Request processed successfully" });
                     }
                     
-                    return "HTTP/1.0 412 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                    return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                             JsonSerializer.Serialize(new { Message = "Invalid user_id" });
                     
                 }
@@ -223,7 +223,7 @@ namespace MonsterCardTradingGame.Server.Routes
                     }
                 }
                 
-                return "HTTP/1.0 412 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                return "HTTP/1.0 401 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Invalid user_id" });
                 
             });
@@ -241,9 +241,9 @@ namespace MonsterCardTradingGame.Server.Routes
                         {
                             _cardsRepository.TransferReceivedCard(requestParameter, requestBody);
                             _cardsRepository.TransferCard(requestParameter, userId);
-                            _tradingsRepository.RemoveDeal(requestParameter);
-                            return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                                   JsonSerializer.Serialize(new { Message = "Get the Deal!" });
+                            _tradingsRepository.DeleteById(requestParameter);
+                            return "HTTP/1.0 201 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                   JsonSerializer.Serialize(new { Message = "Deal done!" });
                         }
                         catch (Exception e)
                         {
@@ -296,6 +296,23 @@ namespace MonsterCardTradingGame.Server.Routes
             {
                 return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                        JsonSerializer.Serialize(new {Trading = _tradingsRepository.CheckTradingDeals(userId) });
+            });
+
+
+            //Delete trading deal Route
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("DELETE","/tradings",(requestBody, requestParameter, userId)=>
+            {
+                if (_tradingsRepository.CheckIfDealExists(requestParameter))
+                {
+                    _tradingsRepository.DeleteById(requestParameter);
+                    return
+                        "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                        JsonSerializer.Serialize(new { Message = "Deal deleted" });
+                }
+                return
+                    "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                    JsonSerializer.Serialize(new { Message = "Error deleting deal" });
             });
 
 

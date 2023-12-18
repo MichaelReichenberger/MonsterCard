@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MonsterCardTradingGame.Server.Routes;
 namespace MonsterCardTradingGame.Server
 {
-    internal class Router
+    public class Router
     {
         private List<Route> routes = new List<Route>();
 
@@ -16,6 +16,23 @@ namespace MonsterCardTradingGame.Server
         public void AddRoute(string method, string url, AsyncRouteAction action)
         {
             routes.Add(new Route(method, url, action));
+        }
+
+        public List<Route> GetRoutes()
+        {
+            return routes;
+        }
+
+        public Route GetRoute(string method, string url)
+        {
+            foreach (var route in routes)
+            {
+                if (route.Method == method && route.Url == url)
+                {
+                    return route;
+                }
+            }
+            return null;
         }
 
         public async Task<string> HandleRequest(string method, string url, string requestBody, string requestParameter, int userId)

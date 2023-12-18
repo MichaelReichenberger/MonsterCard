@@ -10,5 +10,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
     {
         protected int GetFirstId();
         protected int GetNextId();
+
     }
 }

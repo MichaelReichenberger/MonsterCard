@@ -8,7 +8,7 @@ using MonsterCardTradingGame.Models.BaseClasses;
 
 namespace MonsterCardTradingGame.BusinessLogic
 {
-    internal class Parser
+    public class Parser
     {
         public (string Element, string Creature) ParseCards(string cardName)
         {

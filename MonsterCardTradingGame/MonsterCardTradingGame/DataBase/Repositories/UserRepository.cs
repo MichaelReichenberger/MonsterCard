@@ -7,7 +7,7 @@ using Npgsql;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
-    internal class UserRepository : IRepository
+    public class UserRepository : IRepository
     {
         //DBAcces initialization
         private DBAccess _dbAccess { get; set; }
@@ -47,6 +47,19 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
             });
         }
+
+        public void DeleteById(int id)
+        {
+            _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("DELETE FROM users WHERE user_id = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", id);
+                    return cmd.ExecuteNonQuery();
+                }
+            });
+        }
+
         //Help functions
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal int? GetUserId(string username)
@@ -241,6 +254,18 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 throw new Exception("Error while getting user data");
             }
         }
+
+        public void DeleteById(int id)
+        {
+            _dbAccess.ExecuteQuery(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("DELETE FROM users WHERE user_id = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", id);
+                    return cmd.ExecuteNonQuery();
+                }
+            });
+        });
     }
 }
 

@@ -1,6 +1,6 @@
 ﻿namespace MonsterCardTradingGame.Server.Routes
 {
-    internal class Route
+    public class Route
     {
         public string Method { get; }
         public string Url { get; }

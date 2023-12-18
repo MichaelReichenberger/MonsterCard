@@ -8,7 +8,7 @@ using Npgsql;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
-    internal class CardsRepository :IRepository
+    public class CardsRepository :IRepository
     {
 
         private DBAccess _dbAccess { get; set; }

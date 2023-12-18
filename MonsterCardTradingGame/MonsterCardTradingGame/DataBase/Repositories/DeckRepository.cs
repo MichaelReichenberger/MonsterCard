@@ -8,21 +8,23 @@ using System.Threading.Tasks;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
-    internal class DeckRepository : IRepository
+    public class DeckRepository : IRepository
     {
 
         private DBAccess _dbAccess { get; set; }
         private Parser _parser;
         private UserRepository _userRepository;
+
         public DeckRepository(string connectionString)
         {
             _dbAccess = new DBAccess(connectionString);
             _userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
             _parser = new Parser();
         }
+
         public int GetFirstId()
         {
-           throw new NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public int GetNextId()
@@ -30,8 +32,20 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
+        public void DeleteById(int id)
+        {
+            _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("DELETE FROM decks WHERE user_id = @userId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", id);
+                    return cmd.ExecuteNonQuery();
+                }
+            });
+        }
 
-        //Insert deck in DB
+
+    //Insert deck in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void InsertCardsIntoDeck(int userId, List<string> cardIds)
         {
