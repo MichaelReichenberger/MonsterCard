@@ -14,10 +14,12 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         private DBAccess _dbAccess { get; set; }
         private Parser _parser;
         private UserRepository _userRepository;
+        private TradingsRepository _tradingsRepository;
         public CardsRepository(string connectionString)
         {
             _dbAccess = new DBAccess(connectionString);
             _userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
+            _tradingsRepository = new TradingsRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
             _parser = new Parser();
         }
         public int GetFirstId()
@@ -30,6 +32,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
+        //Get user cards from DB
         public string GetCardsFromDB(int userId)
         {
             return _dbAccess.ExecuteQuery<string>(conn =>
@@ -50,6 +53,24 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         }
                         return result.ToString();
                     }
+                }
+            });
+        }
+
+        //Transfer card after deal is accepted
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        public void TransferCard(string dealId, int userId)
+        {
+            Console.WriteLine(userId);
+            string cardId = _tradingsRepository.GetCardIdByDealId(dealId);
+            Console.WriteLine(cardId);
+            _dbAccess.ExecuteQuery<int>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("UPDATE card_stacks SET user_id = @userId WHERE unique_id = @cardId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    cmd.Parameters.AddWithValue("@cardId", cardId);
+                    return cmd.ExecuteNonQuery();
                 }
             });
         }

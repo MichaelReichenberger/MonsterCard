@@ -28,7 +28,6 @@
 
     public async Task<string> WaitForOtherPlayerAndStartBattleAsync()
     {
-
         lock (lockObject)
         {
             playerCount++;

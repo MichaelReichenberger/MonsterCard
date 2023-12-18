@@ -17,6 +17,7 @@ namespace MonsterCardTradingGame.Server.Routes
         private UserRepository _userRepository;
         private PackageRepository _packageRepository;
         private CardsRepository _cardsRepository;
+        private TradingsRepository _tradingsRepository;
         public RouteConfig(Router router)
         {
             _router = router;
@@ -24,6 +25,7 @@ namespace MonsterCardTradingGame.Server.Routes
             _userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
             _packageRepository = new PackageRepository("Host = localhost; Username = myuser; Password = mypassword; Database = mydb");
             _cardsRepository = new CardsRepository("Host = localhost; Username = myuser; Password = mypassword; Database = mydb");
+            _tradingsRepository = new TradingsRepository("Host = localhost; Username = myuser; Password = mypassword; Database = mydb");
             DefineRoutes();
         }
 
@@ -47,6 +49,7 @@ namespace MonsterCardTradingGame.Server.Routes
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/users", (requestBody, requestParameter, r) =>
             {
+                Console.WriteLine($"Handling client on thread: {Thread.CurrentThread.ManagedThreadId}");
                 try
                 {
                     var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
@@ -84,10 +87,12 @@ namespace MonsterCardTradingGame.Server.Routes
                         return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                                JsonSerializer.Serialize(new { Message = "Missing username" });
                     }
+
                     string username = userData.TryGetValue("Name", out var usernameValue) ? usernameValue : "";
                     string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
                     string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
                     string password = userData.TryGetValue("Password", out var passwordValue) ? passwordValue : "";
+
                     _userRepository.UpdateUser(username, requestParameter, password, image, bio);
                     return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "User updated successfully" });
@@ -131,7 +136,6 @@ namespace MonsterCardTradingGame.Server.Routes
                 return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                        JsonSerializer.Serialize(new { Message = "Internal Error" });
             });
-
 
             //Create package Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -195,18 +199,78 @@ namespace MonsterCardTradingGame.Server.Routes
                 }
             });
 
+
+            //Creat trading deal Route
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("POST", "/tradings", (requestBody, requestParameter, userId) =>
+            {
+                if (_tradingsRepository.CheckIfDealExists(requestParameter))
+                {
+                    if (_tradingsRepository.GetSenderIdByDealId(requestParameter) != userId)
+                    {
+                        _cardsRepository.TransferCard(requestParameter, userId);
+                        return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "Get the Deal!" });
+                    }
+                    else
+                    {
+                        return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "It is not allowed to deal with your self!" });
+                    }
+                   
+                }
+                try
+                {
+                    var tradeData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(requestBody);
+
+                    if (tradeData == null ||
+                        !tradeData.TryGetValue("Id", out var idElement) ||
+                        !tradeData.TryGetValue("CardToTrade", out var cardToTradeElement) ||
+                        !tradeData.TryGetValue("MinimumDamage", out var minimumDamageElement))
+                    {
+                        return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "Missing required fields" });
+                    }
+
+                    // Extrahieren Sie die Werte aus den JsonElement-Objekten
+                    string id = idElement.GetString();
+                    string cardToTrade = cardToTradeElement.GetString();
+                    int minDamage = minimumDamageElement.GetInt32();
+
+                    // Fügen Sie die Daten in die Datenbank ein
+                    _tradingsRepository.InsertCardsIntoTradings(userId, id, cardToTrade, minDamage);
+
+                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = "Trading data successfully inserted" });
+                }
+                catch (Exception ex)
+                {
+                    return
+                        "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                        JsonSerializer.Serialize(new { Message = $"An error occurred: {ex.Message}" });
+                }
+            });
+
+            //Check trading deals Route
+            /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+            _router.AddRoute("GET", "/tradings", (requestBody, requestParameter, userId) =>
+            {
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       JsonSerializer.Serialize(new {Trading = _tradingsRepository.CheckTradingDeals(userId) });
+            });
+
             //Read user_stats Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("GET", "/stats", (requestBody, requestParameter, r) =>
             {
-               
-                return "Test";
+                return
+                    "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                    JsonSerializer.Serialize(new { Message = $"An error occurred: " });
             });
             //Start battle Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/battle", async (requestBody, requestParameter, r) =>
             {
-                
                 return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                        JsonSerializer.Serialize(new { Message = "Battle started:", randomNumber = await _gameManager.WaitForOtherPlayerAndStartBattleAsync() });
             });
