@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using MonsterCardTradingGame.BusinessLogic;
 using MonsterCardTradingGame.DataBase.Repositories;
-using MonsterCardTradingGame.Models.BaseClasses;
+
 using MonsterCardTradingGame.Server.Sessions;
 using Npgsql.Replication;
 using MonsterCardTradingGame.Server.Sessions;
@@ -45,14 +45,23 @@ namespace MonsterCardTradingGame.Server.Routes
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("GET", "/users", (requestbody, requestParameter, userId) =>
             {
-                if (_userRepository.GetUserId(requestParameter) != userId)
+                try
                 {
-                    return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
+                    if (_userRepository.GetUserId(requestParameter) != userId)
+                    {
+                        return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
+                    }
+                    var userData = _userRepository.GetUserData(requestParameter);
+                    var userAsJson = JsonSerializer.Serialize(userData);
+                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + userAsJson;
                 }
-                var userData = _userRepository.GetUserData(requestParameter);
-                var userAsJson= JsonSerializer.Serialize(userData);
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + userAsJson;
+                catch(Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+                return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
             });
 
 
@@ -77,11 +86,12 @@ namespace MonsterCardTradingGame.Server.Routes
                     return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "User successfully created" });
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
+                    Console.WriteLine(e);
                     return
                         "HTTP/1.0 409 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                        JsonSerializer.Serialize(new { Message = $"An error occurred: {ex.Message}" });
+                        JsonSerializer.Serialize(new { Message = $"An error occurred: {e.Message}" });
                 }
             });
 
@@ -160,18 +170,23 @@ namespace MonsterCardTradingGame.Server.Routes
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/packages", (requestBody, requestParameter, r) =>
             {
-                Parser newParser = new Parser();
-                
-                if (newParser.IsValidJson(requestBody))
+                try
                 {
-                    _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
-                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "Request processed successfully" });
+                    Parser newParser = new Parser();
+
+                    if (newParser.IsValidJson(requestBody))
+                    {
+                        _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
+                        return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "Request processed successfully" });
+                    }
                 }
-                
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
                 return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Input is not correkt" });
-                
             });
 
 
@@ -179,29 +194,38 @@ namespace MonsterCardTradingGame.Server.Routes
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/transactions",(requestBody, requestParameter, userId)=>
             {
-                if (_packageRepository.GetPackageCount() > 0)
+                try
                 {
-                    if (userId > 0)
+                    if (_packageRepository.GetPackageCount() > 0)
                     {
-                        if (_userRepository.GetCoins(userId) < 20)
+                        if (userId > 0)
                         {
-                            return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                                   JsonSerializer.Serialize(new { Message = "Not enough coins" });
+                            if (_userRepository.GetCoins(userId) < 20)
+                            {
+                                return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                       JsonSerializer.Serialize(new { Message = "Not enough coins" });
+                            }
+
+                            _packageRepository.TransferPackageToStack(userId);
+                            _packageRepository.RemoveFirstPackage();
+                            _userRepository.SubstractCoins(userId, 20);
+                            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                   JsonSerializer.Serialize(new { Message = "Request processed successfully" });
                         }
-                        
-                        _packageRepository.TransferPackageToStack(userId);
-                        _packageRepository.RemoveFirstPackage();
-                        _userRepository.SubstractCoins(userId, 20);
-                        return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                               JsonSerializer.Serialize(new { Message = "Request processed successfully" });
+
+                        return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               JsonSerializer.Serialize(new { Message = "Invalid user_id" });
+
                     }
-                    
-                    return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                            JsonSerializer.Serialize(new { Message = "Invalid user_id" });
-                    
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           JsonSerializer.Serialize(new { Message = "No packages available" });
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
                 }
                 return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "No packages available" });
+                       JsonSerializer.Serialize(new { Message = "No packages available" });
             });
 
 
@@ -229,7 +253,7 @@ namespace MonsterCardTradingGame.Server.Routes
             });
 
 
-            //Creat trading deal Route
+            //Create trading deal Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("POST", "/tradings", (requestBody, requestParameter, userId) =>
             {
@@ -270,12 +294,10 @@ namespace MonsterCardTradingGame.Server.Routes
                                JsonSerializer.Serialize(new { Message = "Missing required fields" });
                     }
 
-                    // Extrahieren Sie die Werte aus den JsonElement-Objekten
                     string id = idElement.GetString();
                     string cardToTrade = cardToTradeElement.GetString();
                     int minDamage = minimumDamageElement.GetInt32();
 
-                    // Fügen Sie die Daten in die Datenbank ein
                     _tradingsRepository.InsertCardsIntoTradings(userId, id, cardToTrade, minDamage);
 
                     return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +

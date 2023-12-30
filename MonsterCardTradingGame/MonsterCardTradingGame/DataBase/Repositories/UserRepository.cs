@@ -158,7 +158,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error while adding user. Try another username.");
             }
             
@@ -221,7 +220,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error while updating user");
             }
         }
@@ -250,7 +248,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error while getting user data");
             }
         }

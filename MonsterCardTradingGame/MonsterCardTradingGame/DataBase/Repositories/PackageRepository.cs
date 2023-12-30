@@ -83,7 +83,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
                     throw new Exception("Error while inserting package to DB");
                 }
             }
@@ -107,7 +106,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                
                 throw new Exception("Error while getting package count");
             }
         }
@@ -128,7 +127,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                
                 throw new Exception("Error while removing first package");
             }
         }
@@ -153,7 +152,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
                 throw new Exception("Error while transferring package to stack");
             }
         }

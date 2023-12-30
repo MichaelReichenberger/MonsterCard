@@ -38,61 +38,84 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void InsertCardsIntoTradings(int userId, string dealId, string cardToInsert,int minimumDamage)
         {
-            _dbAccess.ExecuteQuery<int>(conn =>
+            try
             {
-                using (var cmd =
-                       new NpgsqlCommand(
-                           "INSERT INTO tradings (sender_id,deal_id, offered_card, minimum_damage) VALUES (@userId,@dealId, @cardToTrade, @minimumDamage)",
-                           conn))
+                _dbAccess.ExecuteQuery<int>(conn =>
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    cmd.Parameters.AddWithValue("@dealId", dealId);
-                    cmd.Parameters.AddWithValue("@cardToTrade", cardToInsert);
-                    cmd.Parameters.AddWithValue("@minimumDamage", minimumDamage);
-                    return cmd.ExecuteNonQuery();
-                }
-            });
+                    using (var cmd =
+                           new NpgsqlCommand(
+                               "INSERT INTO tradings (sender_id,deal_id, offered_card, minimum_damage) VALUES (@userId,@dealId, @cardToTrade, @minimumDamage)",
+                               conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        cmd.Parameters.AddWithValue("@dealId", dealId);
+                        cmd.Parameters.AddWithValue("@cardToTrade", cardToInsert);
+                        cmd.Parameters.AddWithValue("@minimumDamage", minimumDamage);
+                        return cmd.ExecuteNonQuery();
+                    }
+                });
+            }
+            catch(Exception e)
+            {
+                throw new Exception("Error while inserting cards into tradings");
+            }
         }
 
         //Check out tradings table
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string CheckTradingDeals(int userId)
         {
-            return _dbAccess.ExecuteQuery<string>(conn =>
+            try
             {
-                using (var cmd = new NpgsqlCommand("SELECT * FROM tradings WHERE sender_id = @userId", conn))
+                return _dbAccess.ExecuteQuery<string>(conn =>
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    using (var reader = cmd.ExecuteReader())
+                    using (var cmd = new NpgsqlCommand("SELECT * FROM tradings WHERE sender_id = @userId", conn))
                     {
-                        var result = new StringBuilder();
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            for (int i = 0; i < reader.FieldCount; i++)
+                            var result = new StringBuilder();
+                            while (reader.Read())
                             {
-                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                                }
+
+                                result.AppendLine();
                             }
-                            result.AppendLine();
+
+                            return result.ToString();
                         }
-                        return result.ToString();
                     }
-                }
-            });
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error while checking trading deals");
+            }
         }
 
         //Check if deal exists
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public bool CheckIfDealExists(string dealId)
         {
-            return _dbAccess.ExecuteQuery<bool>(conn =>
+            try
             {
-                using (var cmd = new NpgsqlCommand("SELECT EXISTS(SELECT 1 FROM tradings WHERE deal_id = @dealId)",
-                           conn))
+                return _dbAccess.ExecuteQuery<bool>(conn =>
                 {
-                    cmd.Parameters.AddWithValue("@dealId", dealId);
-                    return (bool)cmd.ExecuteScalar();
-                }
-            });
+                    using (var cmd = new NpgsqlCommand("SELECT EXISTS(SELECT 1 FROM tradings WHERE deal_id = @dealId)",
+                               conn))
+                    {
+                        cmd.Parameters.AddWithValue("@dealId", dealId);
+                        return (bool)cmd.ExecuteScalar();
+                    }
+                });
+            }
+            catch(Exception e)
+            {
+                throw new Exception("Error while checking if deal exists");
+            }
         }
 
 
@@ -100,14 +123,21 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void DeleteById(string dealId)
         {
-            _dbAccess.ExecuteQuery<int>(conn =>
+            try
             {
-                using (var cmd = new NpgsqlCommand("DELETE FROM tradings WHERE deal_id = @dealId", conn))
+                _dbAccess.ExecuteQuery<int>(conn =>
                 {
-                    cmd.Parameters.AddWithValue("@dealId", dealId);
-                    return cmd.ExecuteNonQuery();
-                }
-            });
+                    using (var cmd = new NpgsqlCommand("DELETE FROM tradings WHERE deal_id = @dealId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@dealId", dealId);
+                        return cmd.ExecuteNonQuery();
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error while removing deal");
+            }
         }
 
 
@@ -115,52 +145,62 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string GetCardIdByDealId(string dealId)
         {
-            return _dbAccess.ExecuteQuery<string>(conn =>
+            try
             {
-                using (var cmd = new NpgsqlCommand("SELECT offered_card FROM tradings WHERE deal_id = @dealId", conn))
+                return _dbAccess.ExecuteQuery<string>(conn =>
                 {
-                    cmd.Parameters.AddWithValue("@dealId", dealId);
-                    using (var reader = cmd.ExecuteReader())
+                    using (var cmd = new NpgsqlCommand("SELECT offered_card FROM tradings WHERE deal_id = @dealId", conn))
                     {
-                        if (reader.Read())
+                        cmd.Parameters.AddWithValue("@dealId", dealId);
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            // Nur der Wert der ersten Spalte (offered_card) wird zurückgegeben
-                            return reader[0].ToString();
-                        }
-                        else
-                        {
-                            // Kein Eintrag gefunden, gebe einen leeren String oder Null zurück
-                            return null;
+                            if (reader.Read())
+                            {
+                                return reader[0].ToString();
+                            }
+                            else
+                            {
+                                return null;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error getting cardId by dealId");
+            }
         }
 
         //Get the senderId of the deal
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public int GetSenderIdByDealId(string dealId)
         {
-            return _dbAccess.ExecuteQuery<int>(conn =>
+            try
             {
-                using (var cmd = new NpgsqlCommand("SELECT sender_id FROM tradings WHERE deal_id = @dealId", conn))
+                return _dbAccess.ExecuteQuery<int>(conn =>
                 {
-                    cmd.Parameters.AddWithValue("@dealId", dealId);
-                    using (var reader = cmd.ExecuteReader())
+                    using (var cmd = new NpgsqlCommand("SELECT sender_id FROM tradings WHERE deal_id = @dealId", conn))
                     {
-                        if (reader.Read())
+                        cmd.Parameters.AddWithValue("@dealId", dealId);
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            // Nur der Wert der ersten Spalte (sender_id) wird zurückgegeben
-                            return Convert.ToInt32(reader[0]);
-                        }
-                        else
-                        {
-                            // Kein Eintrag gefunden, gebe einen leeren String oder Null zurück
-                            return -1;
+                            if (reader.Read())
+                            {
+                                return Convert.ToInt32(reader[0]);
+                            }
+                            else
+                            {
+                                return -1;
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error getting senderId by dealId");
+            }
         }
     }
 }

@@ -69,7 +69,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 catch (Exception e)
                 {
                     Console.WriteLine(e);
-                    throw;
+                    throw new Exception("Error inserting card into deck");
                 }
             }
         }
@@ -78,26 +78,35 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string GetDeckByUserId(int userId)
         {
-            return _dbAccess.ExecuteQuery<string>(conn =>
+            try
             {
-                using (var cmd = new NpgsqlCommand("SELECT unique_id FROM decks WHERE user_id = @userId", conn))
+                return _dbAccess.ExecuteQuery<string>(conn =>
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    using (var reader = cmd.ExecuteReader())
+                    using (var cmd = new NpgsqlCommand("SELECT unique_id FROM decks WHERE user_id = @userId", conn))
                     {
-                        var result = new StringBuilder();
-                        while (reader.Read())
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        using (var reader = cmd.ExecuteReader())
                         {
-                            for (int i = 0; i < reader.FieldCount; i++)
+                            var result = new StringBuilder();
+                            while (reader.Read())
                             {
-                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                                }
+                                result.AppendLine();
                             }
-                            result.AppendLine();
+                            return result.ToString();
                         }
-                        return result.ToString();
                     }
-                }
-            });
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw new Exception("Error getting deck by userId");
+            }
+            
         }
 
         public void DeleteDeckByUserId(int userId)
