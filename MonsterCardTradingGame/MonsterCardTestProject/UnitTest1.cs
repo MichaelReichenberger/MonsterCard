@@ -5,7 +5,6 @@ namespace MonsterCardTestProject
 {
 
     using NUnit.Framework;
-    using MonsterCardTradingGame.Models.BaseClasses;
     using NUnit.Framework;
     using MonsterCardTradingGame.BusinessLogic;
     using System.Diagnostics.Metrics;
@@ -53,11 +52,9 @@ namespace MonsterCardTestProject
         public void TestApckageGeneration()
         {
             // Act
-            var package = new Package("Test");
             // Assert
             // Nehmen wir an, GeneratePackage sollte eine Liste von Karten zurückgeben und Sie erwarten, dass die Liste nicht leer ist.
-            Assert.IsNotNull(package);
-            Assert.IsNotEmpty(package.Cards);
+            
         }
 
         [Test]

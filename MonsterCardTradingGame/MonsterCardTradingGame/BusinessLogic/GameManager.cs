@@ -17,7 +17,7 @@ public class GameManager
     public static GameManager Instance
     {
         get
-        {
+        { 
             lock (instanceLockObject)
             {
                 if (instance == null)

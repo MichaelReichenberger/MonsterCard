@@ -1,37 +1,50 @@
 ﻿using System;
+using System.Data;
 using Npgsql;
 
 namespace MonsterCardTradingGame.DataBase
 {
     internal class DBAccess
     {
-        private static string _connString;
+        private readonly string _connString;
 
         public DBAccess(string connString)
         {
             _connString = connString;
         }
 
-        public void Connect()
+        private NpgsqlConnection CreateConnection()
         {
-            using (var conn = new NpgsqlConnection(_connString))
-            {
-                conn.Open();
-            }
-        }
-
-        public void Close(NpgsqlConnection conn)
-        {
-                conn.Close();
+            var connection = new NpgsqlConnection(_connString);
+            connection.Open();
+            return connection;
         }
 
         public T ExecuteQuery<T>(Func<NpgsqlConnection, T> queryFunction)
         {
-            using (var conn = new NpgsqlConnection(_connString))
+            using (var conn = CreateConnection())
             {
-                conn.Open();
                 return queryFunction(conn);
-            }
+            } // The connection is automatically closed and disposed here
+        }
+
+        public void ExecuteTransaction(Action<NpgsqlConnection, NpgsqlTransaction> transactionAction)
+        {
+            using (var conn = CreateConnection())
+            {
+                using (var transaction = conn.BeginTransaction())
+                {
+                    try
+                    {
+                        transactionAction(conn, transaction);
+                        transaction.Commit();
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e);
+                    }
+                }
+            } // The connection is automatically closed and disposed here
         }
     }
 }

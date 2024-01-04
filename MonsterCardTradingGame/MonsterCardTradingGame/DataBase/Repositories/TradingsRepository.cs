@@ -31,35 +31,36 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
-        
+
 
 
         //Insert offer into tradings table
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public void InsertCardsIntoTradings(int userId, string dealId, string cardToInsert,int minimumDamage)
+        public void InsertCardsIntoTradings(int userId, string dealId, string cardToInsert, int minimumDamage)
         {
-            try
+            _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
-                _dbAccess.ExecuteQuery<int>(conn =>
+                try
                 {
-                    using (var cmd =
-                           new NpgsqlCommand(
-                               "INSERT INTO tradings (sender_id,deal_id, offered_card, minimum_damage) VALUES (@userId,@dealId, @cardToTrade, @minimumDamage)",
+                    using (var cmd = new NpgsqlCommand(
+                               "INSERT INTO tradings (sender_id, deal_id, offered_card, minimum_damage) VALUES (@userId, @dealId, @cardToTrade, @minimumDamage)",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
                         cmd.Parameters.AddWithValue("@dealId", dealId);
                         cmd.Parameters.AddWithValue("@cardToTrade", cardToInsert);
                         cmd.Parameters.AddWithValue("@minimumDamage", minimumDamage);
-                        return cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
                     }
-                });
-            }
-            catch(Exception e)
-            {
-                throw new Exception("Error while inserting cards into tradings");
-            }
-        }
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Error while inserting cards into tradings");
+                }
+            });
+        } 
 
         //Check out tradings table
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -69,7 +70,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             {
                 return _dbAccess.ExecuteQuery<string>(conn =>
                 {
-                    using (var cmd = new NpgsqlCommand("SELECT * FROM tradings WHERE sender_id = @userId", conn))
+                    using (var cmd = new NpgsqlCommand("SELECT * FROM tradings WHERE sender_id != @userId", conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
                         using (var reader = cmd.ExecuteReader())
@@ -123,21 +124,23 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void DeleteById(string dealId)
         {
-            try
+            _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
-                _dbAccess.ExecuteQuery<int>(conn =>
+                try
                 {
                     using (var cmd = new NpgsqlCommand("DELETE FROM tradings WHERE deal_id = @dealId", conn))
                     {
                         cmd.Parameters.AddWithValue("@dealId", dealId);
-                        return cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
                     }
-                });
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error while removing deal");
-            }
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Error while removing deal");
+                }
+            });
         }
 
 

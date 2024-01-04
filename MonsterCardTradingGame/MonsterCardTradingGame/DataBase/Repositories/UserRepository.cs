@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
@@ -11,7 +12,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
     {
         //DBAcces initialization
         private DBAccess _dbAccess { get; set; }
-
+        
         //Constructor
         public UserRepository(string connectionString)
         {
@@ -124,53 +125,56 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        
+
 
         //Add user to DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal void AddUser(string username, string password, string image, string bio)
         {
-            try
+            _dbAccess.ExecuteTransaction((conn, trans) =>
             {
-                _dbAccess.ExecuteQuery<int>(conn =>
+                try
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "INSERT INTO users (username, password,level, coins, bio, image) VALUES (@username, @password,@level,@coins, @bio, @image);",
+                               "INSERT INTO users (username, password, level, coins, bio, image) VALUES (@username, @password, @level, @coins, @bio, @image);",
                                conn))
                     {
-                        if (String.IsNullOrEmpty(image))
-                        {
-                            image = "-";
-                        }
-                        if (String.IsNullOrEmpty(bio))
-                        {
-                            bio = "-";
-                        }
+                        // Setting the transaction
+                        cmd.Transaction = trans;
+
+                        // Handle null or empty fields
+                        image = String.IsNullOrEmpty(image) ? "-" : image;
+                        bio = String.IsNullOrEmpty(bio) ? "-" : bio;
+
+                        // Adding parameters
                         cmd.Parameters.AddWithValue("@username", username);
                         cmd.Parameters.AddWithValue("@password", password);
                         cmd.Parameters.AddWithValue("@bio", bio);
                         cmd.Parameters.AddWithValue("@image", image);
                         cmd.Parameters.AddWithValue("@level", 0);
                         cmd.Parameters.AddWithValue("@coins", 80);
-                        return cmd.ExecuteNonQuery();
+
+                        // Execute the command
+                        cmd.ExecuteNonQuery();
                     }
-                });
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error while adding user. Try another username.");
-            }
-            
-           
+                    trans.Commit(); // Commit the transaction after all operations
+                }
+                catch (Exception e)
+                {
+                    trans.Rollback(); // Rollback the transaction in case of an error
+                    throw new Exception("Error while adding user. Try another username.", e);
+                }
+            });
         }
+
 
         //Update user in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal void UpdateUser(string newUsername, string currentUsername, string newPassword, string image, string bio)
         {
-            try
+            _dbAccess.ExecuteTransaction((conn, trans) =>
             {
-                _dbAccess.ExecuteQuery<int>(conn =>
+                try
                 {
                     var updateQuery = new StringBuilder("UPDATE users SET ");
                     if (!string.IsNullOrEmpty(newUsername))
@@ -195,8 +199,13 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         updateQuery.Remove(updateQuery.Length - 2, 2);
                     }
                     updateQuery.Append(" WHERE username = @currentUsername;");
+
                     using (var cmd = new NpgsqlCommand(updateQuery.ToString(), conn))
                     {
+                        // Setting the transaction
+                        cmd.Transaction = trans;
+
+                        // Adding parameters
                         if (!string.IsNullOrEmpty(newUsername))
                         {
                             cmd.Parameters.AddWithValue("@newUsername", newUsername);
@@ -214,15 +223,20 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         {
                             cmd.Parameters.AddWithValue("@image", image);
                         }
-                        return cmd.ExecuteNonQuery();
+
+                        // Execute the command
+                        cmd.ExecuteNonQuery();
                     }
-                });
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error while updating user");
-            }
+                    trans.Commit(); // Commit the transaction after all operations
+                }
+                catch (Exception e)
+                {
+                    trans.Rollback(); // Rollback the transaction in case of an error
+                    throw new Exception("Error while updating user", e);
+                }
+            });
         }
+
         //Get userdata from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal Dictionary<string, object> GetUserData(string username)
@@ -252,7 +266,9 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
         }
 
+        
     }
 }
 
 
+   

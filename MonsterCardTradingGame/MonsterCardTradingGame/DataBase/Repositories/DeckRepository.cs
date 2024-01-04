@@ -34,44 +34,53 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         public void DeleteById(int id)
         {
-            _dbAccess.ExecuteQuery<int>(conn =>
+            _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
-                using (var cmd = new NpgsqlCommand("DELETE FROM decks WHERE user_id = @userId", conn))
+                try
                 {
-                    cmd.Parameters.AddWithValue("@userId", id);
-                    return cmd.ExecuteNonQuery();
+                    using (var cmd = new NpgsqlCommand("DELETE FROM decks WHERE user_id = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", id);
+                        cmd.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Error while removing deck");
                 }
             });
         }
 
 
-    //Insert deck in DB
+        //Insert deck in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void InsertCardsIntoDeck(int userId, List<string> cardIds)
         {
-            foreach (var CardId in cardIds)
+            _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
                 try
                 {
-                    _dbAccess.ExecuteQuery<int>(conn =>
+                    foreach (var CardId in cardIds)
                     {
-                        using (var cmd =
-                               new NpgsqlCommand(
+                        using (var cmd = new NpgsqlCommand(
                                    "INSERT INTO decks (user_id, unique_id) VALUES (@userId, @cardId)",
                                    conn))
                         {
                             cmd.Parameters.AddWithValue("@userId", userId);
                             cmd.Parameters.AddWithValue("@cardId", CardId);
-                            return cmd.ExecuteNonQuery();
+                            cmd.ExecuteNonQuery();
                         }
-                    });
+                    }
+                    transaction.Commit();
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    transaction.Rollback();
                     throw new Exception("Error inserting card into deck");
                 }
-            }
+            });
         }
 
         //Get deck from DB
@@ -111,22 +120,23 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         public void DeleteDeckByUserId(int userId)
         {
-            try
+            _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
-                _dbAccess.ExecuteQuery<int>(conn =>
+                try
                 {
                     using (var cmd = new NpgsqlCommand("DELETE FROM decks WHERE user_id = @userId", conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
-                        return cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
                     }
-                });
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw new Exception("Error while removing deck");
-            }
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Error while removing deck");
+                }
+            });
         }
 
         public int CountCardsInDeck(int userId)
