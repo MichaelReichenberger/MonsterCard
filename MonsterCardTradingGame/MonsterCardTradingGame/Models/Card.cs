@@ -1,6 +1,6 @@
-﻿namespace MonsterCardTradingGame.Models.BaseClasses
+﻿namespace MonsterCardTradingGame.Models
 {
-    public abstract  class Card
+    public abstract class Card
     {
 
         private string _name;

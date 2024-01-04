@@ -1,4 +1,4 @@
-﻿using MonsterCardTradingGame.Models.BaseClasses;
+﻿using MonsterCardTradingGame.Models;
 
 public class GameManager
 {
@@ -17,7 +17,7 @@ public class GameManager
     public static GameManager Instance
     {
         get
-        {
+        { 
             lock (instanceLockObject)
             {
                 if (instance == null)
@@ -56,7 +56,7 @@ public class GameManager
             await Task.Delay(10);
             lock (lockObject)
             {
-                if (playerCount >= 2)
+                if (playerCount == 2)
                 {
                     if (!sharedRandomNumber.HasValue)
                     {

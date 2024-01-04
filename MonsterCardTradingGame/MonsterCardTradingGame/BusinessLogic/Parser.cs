@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using MonsterCardTradingGame.Models.BaseClasses;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MonsterCardTradingGame.BusinessLogic
 {
@@ -81,17 +82,34 @@ namespace MonsterCardTradingGame.BusinessLogic
             return "/";
         }
 
-        public bool IsValidJson(string jsonString)
+        public bool IsValidJson(string strInput)
         {
-            try
+            if (string.IsNullOrWhiteSpace(strInput)) { return false; }
+            strInput = strInput.Trim();
+            if ((strInput.StartsWith("{") && strInput.EndsWith("}")) || //For object
+                (strInput.StartsWith("[") && strInput.EndsWith("]"))) //For array
             {
-                using (JsonDocument.Parse(jsonString))
+                try
                 {
+                    var obj = JToken.Parse(strInput);
+                    Console.WriteLine("###########################################");
                     return true;
                 }
+                catch (JsonReaderException jex)
+                {
+                    //Exception in parsing json
+                    Console.WriteLine("=============================================="+jex.Message);
+                    return false;
+                }
+                catch (Exception ex) //some other exception
+                {
+                    Console.WriteLine("==============================================" + ex.ToString());
+                    return false;
+                }
             }
-            catch (JsonException)
+            else
             {
+                Console.WriteLine("++++++++++++++++++++++++++++++++++++");
                 return false;
             }
         }

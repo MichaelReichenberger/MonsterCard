@@ -1,4 +1,4 @@
-﻿namespace MonsterCardTradingGame.Models.BaseClasses
+﻿namespace MonsterCardTradingGame.Models
 {
     internal abstract class MonsterCard : Card
     {

@@ -99,14 +99,23 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         public void TransferReceivedCard(string dealId, string receivedCard)
         {
             int userId = _tradingsRepository.GetSenderIdByDealId(dealId);
-            _dbAccess.ExecuteQuery<int>(conn =>
+            _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
-                using (var cmd = new NpgsqlCommand(
-                           "UPDATE card_stacks SET user_id = @userId WHERE unique_id = @receivedCard", conn))
+                try
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    cmd.Parameters.AddWithValue("@receivedCard", receivedCard);
-                    return cmd.ExecuteNonQuery();
+                    using (var cmd = new NpgsqlCommand(
+                               "UPDATE card_stacks SET user_id = @userId WHERE unique_id = @receivedCard", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        cmd.Parameters.AddWithValue("@receivedCard", receivedCard);
+                        cmd.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Error transferring received card");
                 }
             });
         }
@@ -118,13 +127,22 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             Console.WriteLine(userId);
             string cardId = _tradingsRepository.GetCardIdByDealId(dealId);
             Console.WriteLine(cardId);
-            _dbAccess.ExecuteQuery<int>(conn =>
+            _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
-                using (var cmd = new NpgsqlCommand("UPDATE card_stacks SET user_id = @userId WHERE unique_id = @cardId", conn))
+                try
                 {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    cmd.Parameters.AddWithValue("@cardId", cardId);
-                    return cmd.ExecuteNonQuery();
+                    using (var cmd = new NpgsqlCommand("UPDATE card_stacks SET user_id = @userId WHERE unique_id = @cardId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        cmd.Parameters.AddWithValue("@cardId", cardId);
+                        cmd.ExecuteNonQuery();
+                    }
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw new Exception("Error transferring card");
                 }
             });
         }
