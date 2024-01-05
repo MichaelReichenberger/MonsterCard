@@ -41,7 +41,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 Console.WriteLine(e.Message);
             }
             return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Message = "Input is not correkt" });
+                   JsonSerializer.Serialize(new { Message = "Error inserting package. CardId may be a duplicate" });
         }
 
         internal string AquirePackage(string requestBody, string requestParameter, int userId)

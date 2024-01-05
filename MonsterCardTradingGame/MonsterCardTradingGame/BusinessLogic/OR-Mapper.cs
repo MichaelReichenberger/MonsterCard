@@ -33,13 +33,17 @@ namespace MonsterCardTradingGame.BusinessLogic
                 Console.WriteLine(cardId);
                 try
                 {
-                    Console.WriteLine(_cardsRepository.GetCardModelFromDB(cardId).Name);
                     deckCards.Add(_cardsRepository.GetCardModelFromDB(cardId));
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }
+            }
+
+            foreach (Card card in deckCards)
+            {
+                Console.WriteLine(card.Name+"-"+card.Element+"-"+card.Damage);
             }
             CardDeck cardDeck = new CardDeck(deckCards);
             return cardDeck;

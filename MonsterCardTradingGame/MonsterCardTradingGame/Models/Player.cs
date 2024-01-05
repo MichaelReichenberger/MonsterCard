@@ -15,7 +15,6 @@
         public Player(string name, string passwordHash, CardDeck cardDeck)
         {
             Name = name;
-            PasswordHash = passwordHash;
             Coins = 20;
             PlayerId++;
             CardDeck = cardDeck;
