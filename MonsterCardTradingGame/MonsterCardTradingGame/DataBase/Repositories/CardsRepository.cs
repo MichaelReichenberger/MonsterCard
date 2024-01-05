@@ -5,6 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Npgsql;
+using MonsterCardTradingGame.Models;
+using System.Xml.Linq;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
@@ -56,6 +59,34 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
             });
         }
+
+
+        public Card GetCardModelFromDB(string uniqueId)
+        {
+            return _dbAccess.ExecuteQuery<Card>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT * FROM card_stacks WHERE unique_id = @uniqueId", conn))
+                {
+                    cmd.Parameters.AddWithValue("@uniqueId", uniqueId);
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            string Name = reader.GetString(reader.GetOrdinal("name"));
+                            string Element = reader.GetString(reader.GetOrdinal("element"));
+                            double Damage = reader.GetDouble(reader.GetOrdinal("damage"));
+                            Card card = new Card(Name, Element, Damage);
+                            return card;
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            });
+        }
+
 
         public string GetDeckInfosFromDB(int userId)
         {

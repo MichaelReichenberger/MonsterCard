@@ -37,14 +37,13 @@ namespace MonsterCardTradingGame.DataBase
                     try
                     {
                         transactionAction(conn, transaction);
-                        transaction.Commit();
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        throw;
                     }
                 }
-            } // The connection is automatically closed and disposed here
+            }
         }
     }
 }

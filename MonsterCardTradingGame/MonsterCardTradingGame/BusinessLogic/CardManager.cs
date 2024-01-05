@@ -30,7 +30,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Console.WriteLine(e.Message);
                     throw;
                 }
             }
@@ -65,7 +65,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
                 return
                     "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                     JsonSerializer.Serialize(new { Message = $"An error occurred: {e.Message}" });
@@ -83,7 +83,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
                 return
                     "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                     JsonSerializer.Serialize(new { Message = $"An error occurred: {e.Message}" });

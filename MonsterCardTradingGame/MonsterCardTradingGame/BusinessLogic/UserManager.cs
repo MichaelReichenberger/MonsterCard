@@ -23,31 +23,36 @@ namespace MonsterCardTradingGame.BusinessLogic
 
         public string RegisterUser(string requestBody, string requestParameter)
         {
-            Console.WriteLine($"Handling client on thread: {Thread.CurrentThread.ManagedThreadId}");
             try
             {
                 var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
-
-                if (userData == null || !userData.TryGetValue("Username", out var username) ||
-                    !userData.TryGetValue("Password", out var password))
+                if (userData == null || !userData.TryGetValue("Username", out var username) || !userData.TryGetValue("Password", out var password))
                 {
                     return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
                 }
+
                 string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
                 string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
-                _userRepository.AddUser(username, password, image, bio);
+
+                // Attempt to add the user
+                _userRepository.AddUser(username, password, image, bio); // If an error occurs, it will go to catch block
+
+                // If AddUser doesn't throw, then it's successful
                 return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "User successfully created" });
+                       JsonSerializer.Serialize(new { Message = "User successfully created....." });
             }
             catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return
-                    "HTTP/1.0 409 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    JsonSerializer.Serialize(new { Message = $"An error occurred: {e.Message}" });
+            { // Log the detailed exception
+                Console.WriteLine(e.Message);
+                return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       JsonSerializer.Serialize(new { Message = $"An error occurred: Try another username" });
             }
         }
+
+        
+
+
 
 
         public string GetUserData(string requestBody, string requestParameter, int userId)
@@ -65,7 +70,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
             return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                    JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
@@ -137,6 +142,7 @@ namespace MonsterCardTradingGame.BusinessLogic
 
         internal string GetUserStats(int userId)
         {
+            
             return
                 "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                 JsonSerializer.Serialize(new { Message = _statsRepository.GetStatsFromDB(userId) });

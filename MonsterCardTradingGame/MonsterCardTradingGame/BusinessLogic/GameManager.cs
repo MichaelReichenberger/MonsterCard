@@ -1,4 +1,5 @@
-﻿using MonsterCardTradingGame.Models;
+﻿using MonsterCardTradingGame.BusinessLogic;
+using MonsterCardTradingGame.Models;
 
 public class GameManager
 {
@@ -9,9 +10,10 @@ public class GameManager
     private List<Card> _playerTwoCards;
     private static GameManager instance = null;
     private static readonly object instanceLockObject = new object();
-
+    private static OR_Mapper _orMapper;
     private GameManager()
     {
+        _orMapper = new OR_Mapper();
     }
 
     public static GameManager Instance
@@ -29,8 +31,10 @@ public class GameManager
         }
     }
 
-    public async Task<string> WaitForOtherPlayerAndStartBattleAsync()
+    public async Task<string> WaitForOtherPlayerAndStartBattleAsync(int userId)
     {
+        Console.WriteLine(userId);
+        _orMapper.ParseCardDeck(userId);
         lock (lockObject)
         {
             playerCount++;

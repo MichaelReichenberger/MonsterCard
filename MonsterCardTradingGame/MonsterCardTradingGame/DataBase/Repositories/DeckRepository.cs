@@ -112,11 +112,45 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error getting deck by userId");
             }
-            
         }
+
+
+        //Get UniqueId from deck by userId
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        public string GetDeckUniqueIdsByUserId(int userId)
+        {
+            try
+            {
+                return _dbAccess.ExecuteQuery<string>(conn =>
+                {
+                    using (var cmd = new NpgsqlCommand("SELECT unique_id FROM decks WHERE user_id = @userId", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            var result = new StringBuilder();
+                            while (reader.Read())
+                            {
+                                for (int i = 0; i < reader.FieldCount; i++)
+                                {
+                                    result.Append($"{reader[i].ToString()}, ");
+                                }
+                                result.AppendLine();
+                            }
+                            return result.ToString();
+                        }
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error getting deck by userId");
+            }
+        }
+
+
 
         public void DeleteDeckByUserId(int userId)
         {
@@ -155,7 +189,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error while getting deck count");
             }
         }

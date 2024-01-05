@@ -29,10 +29,8 @@ namespace MonsterCardTradingGame.BusinessLogic
             try
             {
                 Parser newParser = new Parser();
-                Console.WriteLine(requestBody);
                 if (newParser.IsValidJson(requestBody))
                 {
-                    Console.WriteLine("ISSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
                     _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
                     return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Request processed successfully" });
@@ -40,7 +38,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
             return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                    JsonSerializer.Serialize(new { Message = "Input is not correkt" });
@@ -77,7 +75,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
             return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                    JsonSerializer.Serialize(new { Message = "No packages available" });
@@ -99,7 +97,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Console.WriteLine(e.Message);
                     }
                 }
                 else

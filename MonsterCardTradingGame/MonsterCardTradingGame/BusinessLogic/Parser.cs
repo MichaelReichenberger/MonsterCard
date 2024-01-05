@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MonsterCardTradingGame.DataBase.Repositories;
+using MonsterCardTradingGame.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -11,6 +13,9 @@ namespace MonsterCardTradingGame.BusinessLogic
 {
     public class Parser
     {
+       
+        
+
         public (string Element, string Creature) ParseCards(string cardName)
         {
             // Goblin
@@ -92,18 +97,18 @@ namespace MonsterCardTradingGame.BusinessLogic
                 try
                 {
                     var obj = JToken.Parse(strInput);
-                    Console.WriteLine("###########################################");
+                    Console.WriteLine("============INPUT IS VALID===============");
                     return true;
                 }
                 catch (JsonReaderException jex)
                 {
                     //Exception in parsing json
-                    Console.WriteLine("=============================================="+jex.Message);
+                    Console.WriteLine("============INPUT IS INVALID===============" + jex.Message);
                     return false;
                 }
-                catch (Exception ex) //some other exception
+                catch (Exception ex)
                 {
-                    Console.WriteLine("==============================================" + ex.ToString());
+                    Console.WriteLine("============ INPUT IS INVALID ===============" + ex.ToString());
                     return false;
                 }
             }
@@ -114,5 +119,18 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
         }
 
+        public List<string>ParseUniqueIds(List<string> deckIds)
+        {
+            List<string> filteredIds = deckIds.Where(id => !String.IsNullOrEmpty(id)).ToList();
+            for (int i = 0; i < filteredIds.Count; i++)
+            {
+                filteredIds[i] = filteredIds[i].Replace("\r\n", "");
+            }
+            for (int i = 0; i < filteredIds.Count; i++)
+            {
+                filteredIds[i] = filteredIds[i].Replace(" ", "");
+            }
+            return filteredIds;
+        }
     }
 }

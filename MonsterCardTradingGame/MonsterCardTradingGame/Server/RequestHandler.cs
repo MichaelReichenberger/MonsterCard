@@ -73,7 +73,6 @@ namespace MonsterCardTradingGame.Server
             // Forward Request to Router
             var router = new Router();
             var routeConfig = new RouteConfig(router);
-            Console.WriteLine($"Handling client on thread: {Thread.CurrentThread.ManagedThreadId}");
             var response = await router.HandleRequest(requestMethod, requestUrl, body, requestParameter, sessionManager.GetUserIDByToken(authToken));
             writer.WriteLine(response);
         }

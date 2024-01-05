@@ -1,8 +1,7 @@
 ﻿namespace MonsterCardTradingGame.Models
 {
-    public abstract class Card
+    public class Card
     {
-
         private string _name;
         public string Name
         {
@@ -21,13 +20,13 @@
         }
 
         public string Element { get; set; }
-        public int Damage { get; set; }
-        public Card(string name, string element, int damage)
+        public double Damage { get; set; }
+        public Card(string name, string element, double damage)
         {
             Name = name;
             Element = element;
             Damage = damage;
         }
-        public abstract int attack(Card OpponentCard);
+       
     }
 }

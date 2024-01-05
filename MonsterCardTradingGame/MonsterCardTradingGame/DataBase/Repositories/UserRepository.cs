@@ -162,7 +162,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 catch (Exception e)
                 {
                     trans.Rollback(); // Rollback the transaction in case of an error
-                    throw new Exception("Error while adding user. Try another username.", e);
+                    throw new Exception("Error while adding user.");
                 }
             });
         }
@@ -265,8 +265,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 throw new Exception("Error while getting user data");
             }
         }
-
-        
     }
 }
 

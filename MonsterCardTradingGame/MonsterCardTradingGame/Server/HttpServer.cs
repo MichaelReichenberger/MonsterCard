@@ -27,9 +27,11 @@ namespace MonsterCardTradingGame.Server
                 var clientSocket = _listener.AcceptTcpClient();
                 ThreadPool.QueueUserWorkItem(state =>
                 {
+                    Console.WriteLine($"=================================={DateTime.Now}==================================");
                     Console.WriteLine($"Handling client on thread: {Thread.CurrentThread.ManagedThreadId}");
                     var handler = new RequestHandler(clientSocket);
                     handler.ProcessRequest();
+                    Console.WriteLine("");
                 });
             }
         }
