@@ -36,25 +36,34 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         }
 
         //Get user cards from DB
-        public string GetCardsFromDB(int userId)
+        public List<Card> GetCardsFromDB(int userId)
         {
-            return _dbAccess.ExecuteQuery<string>(conn =>
+            return _dbAccess.ExecuteQuery<List<Card>>(conn =>
             {
                 using (var cmd = new NpgsqlCommand("SELECT * FROM card_stacks WHERE user_id = @userId", conn))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
                     using (var reader = cmd.ExecuteReader())
                     {
-                        var result = new StringBuilder();
+                        var cards = new List<Card>();
                         while (reader.Read())
                         {
-                            for (int i = 0; i < reader.FieldCount; i++)
+                            string name = reader.GetString(reader.GetOrdinal("name"));
+                            string elementString = reader.GetString(reader.GetOrdinal("element"));
+                            double damage = reader.GetDouble(reader.GetOrdinal("damage"));
+
+                            // Convert the string to the Element enum
+                            GameManager.Element element;
+                            if (!Enum.TryParse<GameManager.Element>(elementString, true, out element))
                             {
-                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                                // Handle the case where the element is not valid or throw an exception
+                                throw new ArgumentException("Invalid element value in database for card: " + name);
                             }
-                            result.AppendLine();
+                            // Create and add the new Card object to the list
+                            Card card = new Card(name, element, damage);
+                            cards.Add(card);
                         }
-                        return result.ToString();
+                        return cards;
                     }
                 }
             });
@@ -72,10 +81,19 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                     {
                         if (reader.Read())
                         {
-                            string Name = reader.GetString(reader.GetOrdinal("name"));
-                            string Element = reader.GetString(reader.GetOrdinal("element"));
-                            double Damage = reader.GetDouble(reader.GetOrdinal("damage"));
-                            Card card = new Card(Name, Element, Damage);
+                            string name = reader.GetString(reader.GetOrdinal("name"));
+                            string elementString = reader.GetString(reader.GetOrdinal("element"));
+                            double damage = reader.GetDouble(reader.GetOrdinal("damage"));
+
+                            // Convert the string to the Element enum
+                            GameManager.Element element;
+                            if (!Enum.TryParse<GameManager.Element>(elementString, true, out element))
+                            {
+                                // Handle the case where the element is not valid or throw an exception
+                                throw new ArgumentException("Invalid element value in database for card: " + uniqueId);
+                            }
+                            // Create and return the new Card object
+                            Card card = new Card(name, element, damage);
                             return card;
                         }
                         else

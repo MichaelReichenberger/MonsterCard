@@ -44,9 +44,9 @@ namespace MonsterCardTradingGame.BusinessLogic
             if (cardName.Contains("Kraken") ) return ("Normal", "Kraken");
 
             // Orc
-            if (cardName.Contains("Orc") && cardName.Contains("Water")) return ("Water", "Orc");
-            if (cardName.Contains("Orc") && cardName.Contains("Fire")) return ("Fire", "Orc");
-            if (cardName.Contains("Orc") ) return ("Normal", "Orc");
+            if (cardName.Contains("Ork") && cardName.Contains("Water")) return ("Water", "Orc");
+            if (cardName.Contains("Ork") && cardName.Contains("Fire")) return ("Fire", "Orc");
+            if (cardName.Contains("Ork") ) return ("Normal", "Orc");
 
             // Wizard
             if (cardName.Contains("Wizard") && cardName.Contains("Water")) return ("Water", "Wizard");
@@ -58,11 +58,13 @@ namespace MonsterCardTradingGame.BusinessLogic
             if (cardName.Contains("Troll") && cardName.Contains("Fire")) return ("Fire", "Troll");
             if (cardName.Contains("Troll") ) return ("Normal", "Troll");
 
+            //Spell
             if (cardName.Contains("Spell") && cardName.Contains("Water")) return ("Water", "Spell");
             if (cardName.Contains("Spell") && cardName.Contains("Fire")) return ("Fire", "Spell");
             if (cardName.Contains("Spell")) return ("Normal", "Spell");
 
             // Default case
+            Console.WriteLine(cardName);
             return ("Unknown", "Unknown");
         }
 

@@ -18,10 +18,11 @@
                 }
             }
         }
-
-        public string Element { get; set; }
+        
+        public enum ElementType { Fire, Water, Normal }
+        public GameManager.Element Element { get; set; }
         public double Damage { get; set; }
-        public Card(string name, string element, double damage)
+        public Card(string name, GameManager.Element element, double damage)
         {
             Name = name;
             Element = element;

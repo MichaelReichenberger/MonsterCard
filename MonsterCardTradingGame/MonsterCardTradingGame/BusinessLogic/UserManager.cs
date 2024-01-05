@@ -45,15 +45,10 @@ namespace MonsterCardTradingGame.BusinessLogic
             catch (Exception e)
             { // Log the detailed exception
                 Console.WriteLine(e.Message);
-                return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = $"An error occurred: Try another username" });
+                return "HTTP/1.0 409 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       JsonSerializer.Serialize(new { Message = "User with same username already registered" });
             }
         }
-
-        
-
-
-
 
         public string GetUserData(string requestBody, string requestParameter, int userId)
         {
@@ -66,14 +61,15 @@ namespace MonsterCardTradingGame.BusinessLogic
                 }
                 var userData = _userRepository.GetUserData(requestParameter);
                 var userAsJson = JsonSerializer.Serialize(userData);
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + userAsJson;
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       JsonSerializer.Serialize(new { Message = "Data successfully retrieved"+userAsJson });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
             }
             return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
+                   JsonSerializer.Serialize(new { Message = "Access token is missing or invalid.(It is not allowed to access other users)" });
         }
 
         public string UpdateUserData(string requestBody, string requestParameter, int userId)
