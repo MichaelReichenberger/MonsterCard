@@ -87,13 +87,13 @@ public class GameManager
 
             if (CardFight(player1Deck.Deck[i], player2Deck.Deck[j]) == -1)
             {
-                battleResults.Add($"Player 1 wins with {player1Deck.Deck[i].Name} against {player2Deck.Deck[j].Name}");
+                battleResults.Add($"User 1 wins with {player1Deck.Deck[i].Name} against {player2Deck.Deck[j].Name}");
                 player2Deck.Deck.Add(player1Deck.Deck[i]); 
                 player1Deck.Deck.RemoveAt(i); 
             }
             else if (CardFight(player1Deck.Deck[i], player2Deck.Deck[j]) == 1)
             {
-                battleResults.Add($"Player 2 wins with {player2Deck.Deck[j].Name} against {player1Deck.Deck[i].Name}");
+                battleResults.Add($"User 2 wins with {player2Deck.Deck[j].Name} against {player1Deck.Deck[i].Name}");
                 player1Deck.Deck.Add(player2Deck.Deck[j]); 
                 player2Deck.Deck.RemoveAt(j); 
             }
@@ -117,12 +117,12 @@ public class GameManager
 
             if (playerCount == 1)
             {
-                Console.WriteLine("Player 1 joined, waiting for another player...");
+                Console.WriteLine("User 1 joined, waiting for another player...");
                 _playerOneCards = _orMapper.ParseCardDeck(userId);
             }
             else if (playerCount == 2)
             {
-                Console.WriteLine("Player 2 joined, starting the battle...");
+                Console.WriteLine("User 2 joined, starting the battle...");
                 _playerTwoCards = _orMapper.ParseCardDeck(userId);
             }
         }

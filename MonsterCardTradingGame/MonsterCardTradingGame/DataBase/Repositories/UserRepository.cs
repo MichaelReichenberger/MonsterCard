@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using MonsterCardTradingGame.Models;
 using Newtonsoft.Json;
 using Npgsql;
 
@@ -239,30 +241,61 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Get userdata from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal Dictionary<string, object> GetUserData(string username)
+        internal User GetUserData(int userId)
         {
             try
             {
                 return _dbAccess.ExecuteQuery(conn =>
                 {
-                   using var cmd = new NpgsqlCommand("SELECT * FROM users WHERE username = @username;", conn);
-                    cmd.Parameters.AddWithValue("@username", username);
+                    using var cmd = new NpgsqlCommand("SELECT * FROM users WHERE user_id = @userId;", conn);
+                    cmd.Parameters.AddWithValue("@userId", userId);
                     using var reader = cmd.ExecuteReader();
                     if (reader.Read())
                     {
-                        var result = new Dictionary<string, object>();
-                        for (var i = 0; i < reader.FieldCount; i++)
-                        {
-                            result.Add(reader.GetName(i), reader.GetValue(i));
-                        }
-                        return result;
+                        var user = new User();
+                        user.Name = reader.GetString(reader.GetOrdinal("username")); // Changed from "name" to "username"
+                        user.Coins = reader.GetInt32(reader.GetOrdinal("coins"));
+                        user.Level = reader.GetInt32(reader.GetOrdinal("level"));
+                        user.UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
+                        user.Password = reader.GetString(reader.GetOrdinal("password"));
+                        user.Image = reader.GetString(reader.GetOrdinal("image"));
+                        user.Bio = reader.GetString(reader.GetOrdinal("bio"));
+                        return user;
                     }
                     return null;
                 });
             }
             catch (Exception e)
             {
-                throw new Exception("Error while getting user data");
+                Console.WriteLine(e.Message);
+                throw new Exception("Error while getting user data", e); // Added original exception to the throw statement for better debugging
+            }
+        }
+
+
+        internal User GetUserCredentials(string username)
+        {
+            try
+            {
+                return _dbAccess.ExecuteQuery(conn =>
+                {
+                    using var cmd = new NpgsqlCommand("SELECT * FROM users WHERE username = @username;", conn);
+                    cmd.Parameters.AddWithValue("@username", username);
+                    using var reader = cmd.ExecuteReader();
+                    if (reader.Read())
+                    {
+                        var user = new User();
+                        user.Username = reader.GetString(reader.GetOrdinal("username")); // Changed from "name" to "username"
+                        user.Password = reader.GetString(reader.GetOrdinal("password"));
+                        return user;
+                    }
+                    return null;
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                throw new Exception("Error while getting user data", e); // Added original exception to the throw statement for better debugging
             }
         }
     }

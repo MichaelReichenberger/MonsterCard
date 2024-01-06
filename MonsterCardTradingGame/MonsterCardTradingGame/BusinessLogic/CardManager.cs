@@ -25,8 +25,8 @@ namespace MonsterCardTradingGame.BusinessLogic
             {
                 try
                 {
-                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = _cardsRepository.GetCardsFromDB(userId) });
+                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "The user has cards, the response contains these: " +
+                           JsonSerializer.Serialize( _cardsRepository.GetCardsFromDB(userId));
                 }
                 catch (Exception e)
                 {
@@ -36,7 +36,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
 
             return "HTTP/1.0 401 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Message = "Invalid user_id" });
+                   "Invalid user_id";
         }
 
         internal string ConfigureDeck(string requestBody,string requestParameter, int userId)
@@ -56,12 +56,12 @@ namespace MonsterCardTradingGame.BusinessLogic
                     }
                     _deckRepository.InsertCardsIntoDeck(userId, CardIds);
                     return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "Deck successfully configured" });
+                           "Deck successfully configured";
                 }
 
                 return
                     "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    JsonSerializer.Serialize(new { Message = "Error configuring deck" });
+                    "Error configuring deck";
             }
             catch (Exception e)
             {
@@ -78,8 +78,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             {
 
                 return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = _deckRepository.GetDeckByUserId(userId) });
-
+                       _deckRepository.GetDeckByUserId(userId);
             }
             catch (Exception e)
             {
