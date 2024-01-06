@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MonsterCardTradingGame.DataBase.Repositories;
+using MonsterCardTradingGame.Server.Sessions;
 using Npgsql.Replication;
 
 namespace MonsterCardTradingGame.BusinessLogic
@@ -24,24 +25,62 @@ namespace MonsterCardTradingGame.BusinessLogic
             _tradingsRepository = new TradingsRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
         }
 
-        internal string CreatePackage(string requestBody, string requestParameter)
+        internal string CreatePackage(string requestBody, string requestParameter, int userId)
         {
             try
             {
-                Parser newParser = new Parser();
-                if (newParser.IsValidJson(requestBody))
+                Console.WriteLine(SessionManager.Instance.GetTokenByUserId(userId));
+                if (SessionManager.Instance.GetTokenByUserId(userId) == "admin-mctgToken" &&
+                    _userRepository.GetRole(userId) == "admin")
                 {
-                    _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
-                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           "Package and cards successfully created";
+                    try
+                    {
+                        Parser newParser = new Parser();
+                        if (newParser.IsValidJson(requestBody))
+                        {
+                            _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
+                            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                   "Package and cards successfully created";
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Error inserting package. CardId may be a duplicate";
+
+                    try
+                    {
+                        Parser newParser = new Parser();
+                        if (newParser.IsValidJson(requestBody))
+                        {
+                            _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
+                            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                   "Package and cards successfully created";
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Error inserting package. CardId may be a duplicate";
+                }
+                else
+                {
+                    return "HTTP/1.0 403 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Provided user is not \"admin\"";
                 }
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e);
+                return "HTTP/1.0 403 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       "Error creating package";
             }
-            return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   "Error inserting package. CardId may be a duplicate";
         }
 
         internal string AquirePackage(string requestBody, string requestParameter, int userId)

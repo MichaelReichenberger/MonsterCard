@@ -83,6 +83,16 @@ namespace MonsterCardTradingGame.Server.Sessions
             return session.UserID;
         }
 
+        public string GetTokenByUserId(int userId)
+        {
+            var session = _sessions.FirstOrDefault(session => session.UserID == userId);
+            if (session == null)
+            {
+                return null;
+            }
+            return session.Token;
+        }
+
         public void RemoveSessionByUserId(int userId)
         {
             var session = _sessions.FirstOrDefault(session => session.UserID == userId);

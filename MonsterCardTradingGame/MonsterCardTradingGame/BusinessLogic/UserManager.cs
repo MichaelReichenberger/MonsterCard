@@ -54,10 +54,10 @@ namespace MonsterCardTradingGame.BusinessLogic
         {
             try
             {
-                if (_userRepository.GetUserId(requestParameter) != userId)
+                if (_userRepository.GetUserId(requestParameter) != userId && _userRepository.GetRole(userId) != "admin")
                 {
                     return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           "It is not allowed to edit other users!";
+                           "Access token is missing or invalid";
                 }
                 return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +"Data sucessfully retrieved: "+
                        JsonSerializer.Serialize(_userRepository.GetUserData(userId));
@@ -65,15 +65,20 @@ namespace MonsterCardTradingGame.BusinessLogic
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+                return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       "Access token is missing or invalid or another interal error occured.(It is not allowed to access other users)";
             }
-            return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   "Access token is missing or invalid.(It is not allowed to access other users)";
         }
 
         public string UpdateUserData(string requestBody, string requestParameter, int userId)
         {
             try
             {
+                if (_userRepository.GetUserId(requestParameter) != userId && _userRepository.GetRole(userId) != "admin")
+                {
+                    return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Access token is missing or invalid";
+                }
                 var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
 
                 if (String.IsNullOrEmpty(requestParameter))
@@ -85,7 +90,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 if (_userRepository.GetUserId(requestParameter) != userId)
                 {
                     return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
+                           "User not found";
                 }
                 string username = userData.TryGetValue("Name", out var usernameValue) ? usernameValue : "";
                 string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
@@ -115,10 +120,10 @@ namespace MonsterCardTradingGame.BusinessLogic
                        "Missing Username or Password";
             }
 
-            if (password != _userRepository.getPasswordByUsername(username))
+            if (password != _userRepository.GetPasswordByUsername(username))
             {
                 Console.WriteLine(password);
-                Console.WriteLine(_userRepository.getPasswordByUsername(username));
+                Console.WriteLine(_userRepository.GetPasswordByUsername(username));
             }
             else
             {
@@ -149,3 +154,4 @@ namespace MonsterCardTradingGame.BusinessLogic
         }
     }
 }
+ 

@@ -59,7 +59,7 @@ namespace MonsterCardTradingGame.Server.Routes
 
             //Create package Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            _router.AddRoute("POST", "/packages", (requestBody, requestParameter, r) => _transactionManager.CreatePackage(requestBody,requestParameter));
+            _router.AddRoute("POST", "/packages", (requestBody, requestParameter, userId) => _transactionManager.CreatePackage(requestBody,requestParameter, userId));
 
 
             //Aquire packages Route
@@ -109,10 +109,10 @@ namespace MonsterCardTradingGame.Server.Routes
 
             //Start battle Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            _router.AddRoute("POST", "/battle", async (requestBody, requestParameter, userId) =>
+            _router.AddRoute("POST", "/battle",  (requestBody, requestParameter, userId) =>
             {
                 return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "Battle started:", Result = await _gameManager.WaitForOtherPlayerAndStartBattleAsync(userId) });
+                       JsonSerializer.Serialize(new { Message = "Battle started:", Result =  _gameManager.WaitForOtherPlayerAndStartBattle(userId) });
             });
         }
     }

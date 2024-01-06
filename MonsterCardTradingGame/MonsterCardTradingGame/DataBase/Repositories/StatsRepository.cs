@@ -60,6 +60,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+       
 
         //Get scoreboard from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -158,19 +159,18 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 throw new Exception("Error while inserting stats into DB");
             }
         }
-        public string UpdateWinStatsInDB(int userId, int elo)
+        public string UpdateWinStatsInDB(int userId)
         {
             try
             {
                 return _dbAccess.ExecuteQuery<string>(conn =>
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "UPDATE user_stats SET elo = @elo, wins = @wins WHERE user_id = @userId",
+                               "UPDATE user_stats SET elo = elo + 3, wins = wins + 1 WHERE user_id = @userId",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
-                        cmd.Parameters.AddWithValue("@elo", GetUserElo(userId) + elo);
-                        cmd.Parameters.AddWithValue("@wins", GetUserWins(userId) + 1);
+                        
                         using (var reader = cmd.ExecuteReader())
                         {
                             var result = new StringBuilder();
@@ -191,24 +191,23 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
+                Console.WriteLine(e.Message);
                 throw new Exception("Error while updating stats in DB");
             }
         }
 
 
-        public string UpdateLoseStatsInDB(int userId, int elo)
+        public string UpdateLoseStatsInDB(int userId)
         {
             try
             {
                 return _dbAccess.ExecuteQuery<string>(conn =>
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "UPDATE user_stats SET elo = @elo, losses = @losses WHERE user_id = @userId",
+                               "UPDATE user_stats SET elo = elo - 5, losses = losses + 1 WHERE user_id = @userId",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
-                        cmd.Parameters.AddWithValue("@elo", GetUserElo(userId) - elo);
-                        cmd.Parameters.AddWithValue("@losses", GetUserLosses(userId) + 1);
                         using (var reader = cmd.ExecuteReader())
                         {
                             var result = new StringBuilder();
