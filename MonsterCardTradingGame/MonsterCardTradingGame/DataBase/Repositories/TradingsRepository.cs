@@ -1,4 +1,5 @@
 ﻿using MonsterCardTradingGame.BusinessLogic;
+using MonsterCardTradingGame.Models;
 using Npgsql;
 using System;
 using System.Collections.Generic;
@@ -60,42 +61,42 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                     throw new Exception("Error while inserting cards into tradings");
                 }
             });
-        } 
+        }
 
         //Check out tradings table
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public string CheckTradingDeals(int userId)
+        public List<TradingDeal> CheckTradingDeals(int userId)
         {
             try
             {
-                return _dbAccess.ExecuteQuery<string>(conn =>
+                return _dbAccess.ExecuteQuery<List<TradingDeal>>(conn =>
                 {
-                    using (var cmd = new NpgsqlCommand("SELECT * FROM tradings WHERE sender_id != @userId", conn))
+                    List<TradingDeal> deals = new List<TradingDeal>();
+                    using (var cmd = new NpgsqlCommand("SELECT deal_id, offered_card, minimum_damage FROM tradings WHERE sender_id != @userId", conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
                         using (var reader = cmd.ExecuteReader())
                         {
-                            var result = new StringBuilder();
                             while (reader.Read())
                             {
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                {
-                                    result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
-                                }
-
-                                result.AppendLine();
+                                string dealId = reader.GetString(reader.GetOrdinal("deal_id"));
+                                string cardToTrade = reader.GetString(reader.GetOrdinal("offered_card"));
+                                string type = "Test";
+                                int minimumDamage = reader.GetInt32(reader.GetOrdinal("minimum_damage"));
+                                TradingDeal deal = new TradingDeal(dealId, cardToTrade, type, minimumDamage);
+                                deals.Add(deal);
                             }
-
-                            return result.ToString();
                         }
                     }
+                    return deals;
                 });
             }
             catch (Exception e)
             {
-                throw new Exception("Error while checking trading deals");
+                throw new Exception("Error while checking trading deals", e);
             }
         }
+
 
         //Check if deal exists
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

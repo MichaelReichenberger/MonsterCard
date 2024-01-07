@@ -1,10 +1,10 @@
 ﻿namespace MonsterCardTradingGame.Models
 {
-    internal class CardDeck
+    public class CardDeck
     {
-        public Dictionary<string, Card> Deck { get; set; }
+        public List<Card> Deck { get; set; }
 
-        public CardDeck(Dictionary<string, Card> deck)
+        public CardDeck(List<Card> deck)
         {
             Deck = deck;
         }

@@ -66,8 +66,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 {
                     (string Element, string Name) CardTuple = _parser.ParseCards(card["Name"].GetString());
                     double damage = card["Damage"].GetDouble();
-                    Console.WriteLine(damage);
-
                     try
                     {
                         using (var cmd = new NpgsqlCommand(
@@ -88,8 +86,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                     }
                     catch (Exception e)
                     {
-                        //Console.WriteLine(e.Message);
-                        trans.Rollback(); // Rollback im Fehlerfall
+                        trans.Rollback();
+                        throw new Exception("Error inserting Package"); // Rollback im Fehlerfall
                     }
                 }
                 trans.Commit(); // Commit am Ende aller Einfügungen
@@ -115,7 +113,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error while getting package count");
             }
         }
@@ -137,7 +134,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
                     trans.Rollback();  // Rollback the transaction in case of an error
                     throw new Exception("Error while removing first package", e);
                 }
@@ -169,7 +165,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
                     trans.Rollback();  // Rollback the transaction in case of an error
                     throw new Exception("Error while transferring package to stack", e);
                 }

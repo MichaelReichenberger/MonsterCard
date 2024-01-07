@@ -23,70 +23,74 @@ namespace MonsterCardTradingGame.BusinessLogic
 
         public string RegisterUser(string requestBody, string requestParameter)
         {
-            Console.WriteLine($"Handling client on thread: {Thread.CurrentThread.ManagedThreadId}");
             try
             {
                 var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
-
-                if (userData == null || !userData.TryGetValue("Username", out var username) ||
-                    !userData.TryGetValue("Password", out var password))
+                if (userData == null || !userData.TryGetValue("Username", out var username) || !userData.TryGetValue("Password", out var password))
                 {
                     return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
                 }
+
                 string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
                 string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
-                _userRepository.AddUser(username, password, image, bio);
-                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "User successfully created" });
+
+                
+                _userRepository.AddUser(username, password, image, bio); // If an error occurs, it will go to catch block
+
+                
+                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "User successfully created: "+
+                       JsonSerializer.Serialize(_userRepository.GetUserCredentials(username));
             }
             catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return
-                    "HTTP/1.0 409 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    JsonSerializer.Serialize(new { Message = $"An error occurred: {e.Message}" });
+            { // Log the detailed exception
+                Console.WriteLine(e.Message);
+                return "HTTP/1.0 409 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       "User with same username already registered";
             }
         }
-
 
         public string GetUserData(string requestBody, string requestParameter, int userId)
         {
             try
             {
-                if (_userRepository.GetUserId(requestParameter) != userId)
+                if (_userRepository.GetUserId(requestParameter) != userId && _userRepository.GetRole(userId) != "admin")
                 {
                     return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
+                           "Access token is missing or invalid";
                 }
-                var userData = _userRepository.GetUserData(requestParameter);
-                var userAsJson = JsonSerializer.Serialize(userData);
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + userAsJson;
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +"Data sucessfully retrieved: "+
+                       JsonSerializer.Serialize(_userRepository.GetUserData(userId));
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
+                return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       "User not found";
             }
-            return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
         }
 
         public string UpdateUserData(string requestBody, string requestParameter, int userId)
         {
             try
             {
+                if (_userRepository.GetUserId(requestParameter) != userId && _userRepository.GetRole(userId) != "admin")
+                {
+                    return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Access token is missing or invalid";
+                }
                 var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
 
                 if (String.IsNullOrEmpty(requestParameter))
                 {
                     return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "Missing username" });
+                           "Missing username";
                 }
 
                 if (_userRepository.GetUserId(requestParameter) != userId)
                 {
                     return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "It is not allowed to edit other users!" });
+                           "User not found";
                 }
                 string username = userData.TryGetValue("Name", out var usernameValue) ? usernameValue : "";
                 string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
@@ -94,14 +98,14 @@ namespace MonsterCardTradingGame.BusinessLogic
                 string password = userData.TryGetValue("Password", out var passwordValue) ? passwordValue : "";
 
                 _userRepository.UpdateUser(username, requestParameter, password, image, bio);
-                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "User updated successfully" });
+                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n"+ "User sucessfully updated: " +
+                       JsonSerializer.Serialize(_userRepository.GetUserData(userId));
             }
             catch (Exception ex)
             {
                 return
                     "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    JsonSerializer.Serialize(new { Message = $"An error occurred: {ex.Message}" });
+                    "User not Found";
             }
         }
 
@@ -113,13 +117,13 @@ namespace MonsterCardTradingGame.BusinessLogic
                 !userData.TryGetValue("Password", out var password))
             {
                 return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
+                       "Missing Username or Password";
             }
 
-            if (password != _userRepository.getPasswordByUsername(username))
+            if (password != _userRepository.GetPasswordByUsername(username))
             {
                 Console.WriteLine(password);
-                Console.WriteLine(_userRepository.getPasswordByUsername(username));
+                Console.WriteLine(_userRepository.GetPasswordByUsername(username));
             }
             else
             {
@@ -127,26 +131,29 @@ namespace MonsterCardTradingGame.BusinessLogic
                 var token = sessionManager.GenerateToken(username); // Token generieren
                 int userIdByUserName = _userRepository.GetUserId(username).Value;
                 var sessionId = sessionManager.CreateSession(token, userIdByUserName);
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "User successfully logged in", Token = token, SessionId = sessionId });
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + $"User login successful: Token:{token} ";
             }
 
             return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Message = "Internal Error" });
+                   "Invalid username/password provided:  Token should be {username}-mctgToken";
         }
 
         internal string GetUserStats(int userId)
         {
+            
             return
                 "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                JsonSerializer.Serialize(new { Message = _statsRepository.GetStatsFromDB(userId) });
+                JsonSerializer.Serialize(_statsRepository.GetStatsFromDB(userId));
         }
 
-        internal string GetSocreBoard()
+        internal string GetUserScoreboard(int userId)
         {
+
             return
                 "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                JsonSerializer.Serialize(new { Message = _statsRepository.GetAllStatsOrderedByElo() });
+                JsonSerializer.Serialize(_statsRepository.GetAllStatsOrderedByElo());
         }
+
     }
 }
+ 

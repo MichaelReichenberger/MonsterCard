@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MonsterCardTradingGame.Models;
+using System.Xml;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
@@ -85,7 +87,51 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Get deck from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public string GetDeckByUserId(int userId)
+        public List<Card> GetDeckByUserId(int userId)
+        {
+            try
+            {
+                return _dbAccess.ExecuteQuery<List<Card>>(conn =>
+                {
+                    using (var cmd = new NpgsqlCommand("SELECT * FROM card_stacks WHERE unique_id IN (SELECT unique_id FROM decks WHERE user_id = @userId)", conn))
+                    {
+                        cmd.Parameters.AddWithValue("@userId", userId);
+                        using (var reader = cmd.ExecuteReader())
+                        {
+                            List<Card> cards = new List<Card>();
+                            while (reader.Read())
+                            {
+                                string name = reader.GetString(reader.GetOrdinal("name"));
+                                string elementString = reader.GetString(reader.GetOrdinal("element"));
+                                double damage = reader.GetDouble(reader.GetOrdinal("damage"));
+                                string uniqueId = reader.GetString(reader.GetOrdinal("unique_id"));
+                                // Convert the string to the Element enum
+                                GameManager.Element element;
+                                if (!Enum.TryParse<GameManager.Element>(elementString, true, out element))
+                                {
+                                    // Handle the case where the element is not valid or throw an exception
+                                    throw new ArgumentException("Invalid element value in database for card: " + uniqueId);
+                                }
+                                // Create and return the new Card object
+                                Card card = new Card(name, element, damage);
+                                cards.Add(card);
+                            }
+                            return cards;
+                        }
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Error getting deck by userId", e);
+            }
+        }
+
+
+
+        //Get UniqueId from deck by userId
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        public string GetDeckUniqueIdsByUserId(int userId)
         {
             try
             {
@@ -101,7 +147,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                             {
                                 for (int i = 0; i < reader.FieldCount; i++)
                                 {
-                                    result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
+                                    result.Append($"{reader[i].ToString()}, ");
                                 }
                                 result.AppendLine();
                             }
@@ -112,10 +158,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error getting deck by userId");
             }
-            
         }
 
         public void DeleteDeckByUserId(int userId)
@@ -155,7 +199,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
                 throw new Exception("Error while getting deck count");
             }
         }

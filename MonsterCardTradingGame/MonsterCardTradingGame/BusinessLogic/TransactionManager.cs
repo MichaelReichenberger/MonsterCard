@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using MonsterCardTradingGame.DataBase.Repositories;
+using MonsterCardTradingGame.Server.Sessions;
 using Npgsql.Replication;
 
 namespace MonsterCardTradingGame.BusinessLogic
@@ -24,26 +25,62 @@ namespace MonsterCardTradingGame.BusinessLogic
             _tradingsRepository = new TradingsRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
         }
 
-        internal string CreatePackage(string requestBody, string requestParameter)
+        internal string CreatePackage(string requestBody, string requestParameter, int userId)
         {
             try
             {
-                Parser newParser = new Parser();
-                Console.WriteLine(requestBody);
-                if (newParser.IsValidJson(requestBody))
+                Console.WriteLine(SessionManager.Instance.GetTokenByUserId(userId));
+                if (SessionManager.Instance.GetTokenByUserId(userId) == "admin-mctgToken" &&
+                    _userRepository.GetRole(userId) == "admin")
                 {
-                    Console.WriteLine("ISSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
-                    _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
-                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "Request processed successfully" });
+                    try
+                    {
+                        Parser newParser = new Parser();
+                        if (newParser.IsValidJson(requestBody))
+                        {
+                            _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
+                            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                   "Package and cards successfully created";
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Error inserting package. CardId may be a duplicate";
+
+                    try
+                    {
+                        Parser newParser = new Parser();
+                        if (newParser.IsValidJson(requestBody))
+                        {
+                            _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
+                            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                   "Package and cards successfully created";
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                    }
+
+                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Error inserting package. CardId may be a duplicate";
+                }
+                else
+                {
+                    return "HTTP/1.0 403 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Provided user is not \"admin\"";
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
+                return "HTTP/1.0 403 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       "Error creating package";
             }
-            return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Message = "Input is not correkt" });
         }
 
         internal string AquirePackage(string requestBody, string requestParameter, int userId)
@@ -56,31 +93,30 @@ namespace MonsterCardTradingGame.BusinessLogic
                     {
                         if (_userRepository.GetCoins(userId) < 20)
                         {
-                            return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                                   JsonSerializer.Serialize(new { Message = "Not enough coins" });
+                            return "HTTP/1.0 403 \r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                   "Not enough money for buying a card package";
                         }
 
                         _packageRepository.TransferPackageToStack(userId);
                         _packageRepository.RemoveFirstPackage();
                         _userRepository.SubstractCoins(userId, 20);
                         
-                        return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                               JsonSerializer.Serialize(new { Message = "Request processed successfully" });
+                        return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +"A package has been successfully bought";
                     }
 
                     return "HTTP/1.0 412 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "Invalid user_id" });
+                           "Invalid user_id";
 
                 }
-                return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "No packages available" });
+
+                return "HTTP/1.0 404 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "No card package available for buying";
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Console.WriteLine(e.Message);
             }
-            return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Message = "No packages available" });
+            return "HTTP/1.0 404 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                   "No packages available";
         }
 
         internal string CreateTradingDeal(string requestBody, string requestParameter, int userId)
@@ -95,19 +131,18 @@ namespace MonsterCardTradingGame.BusinessLogic
                         _cardsRepository.TransferCard(requestParameter, userId);
                         _tradingsRepository.DeleteById(requestParameter);
                         return "HTTP/1.0 201 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                               JsonSerializer.Serialize(new { Message = "Deal done!" });
+                               "Trading deal successfully executed";
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e);
+                        Console.WriteLine(e.Message);
                     }
                 }
                 else
                 {
                     return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "It is not allowed to deal with your self!" });
+                           "It is not allowed to deal with your self!";
                 }
-
             }
             try
             {
@@ -119,7 +154,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                     !tradeData.TryGetValue("MinimumDamage", out var minimumDamageElement))
                 {
                     return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           JsonSerializer.Serialize(new { Message = "Missing required fields" });
+                           "Missing required fields";
                 }
 
                 string id = idElement.GetString();
@@ -129,7 +164,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 _tradingsRepository.InsertCardsIntoTradings(userId, id, cardToTrade, minDamage);
 
                 return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       JsonSerializer.Serialize(new { Message = "Trading data successfully inserted" });
+                       "Trading data successfully inserted";
             }
             catch (Exception ex)
             {
@@ -142,7 +177,7 @@ namespace MonsterCardTradingGame.BusinessLogic
         internal string GetActiveTradingDeals(int userId)
         {
             return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Trading = _tradingsRepository.CheckTradingDeals(userId) });
+                   JsonSerializer.Serialize(_tradingsRepository.CheckTradingDeals(userId));
         }
 
         internal string DeleteTradingDeal(string requestBody, string requestParameter, int userId)
@@ -152,11 +187,11 @@ namespace MonsterCardTradingGame.BusinessLogic
                 _tradingsRepository.DeleteById(requestParameter);
                 return
                     "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    JsonSerializer.Serialize(new { Message = "Deal deleted" });
+                    "Deal deleted";
             }
             return
                 "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                JsonSerializer.Serialize(new { Message = "Error deleting deal" });
+                "Error deleting deal";
         }
     }
     
