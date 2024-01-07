@@ -140,20 +140,23 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        public void InitialiseStatsEmpty(int userId)
+        public void InitialiseStatsEmpty(int userId, string username)
         {
             _dbAccess.ExecuteTransaction((conn, transaction) =>
             {
                 try
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "INSERT INTO user_stats (user_id, elo, wins, losses) VALUES (@userId, @elo, @wins, @losses)",
+                               "INSERT INTO user_stats (user_id, username, elo, wins, losses, games_played, win_loose_ratio) VALUES (@userId, @username, @elo, @wins, @losses, @gamesPlayed, @winLooseRatio)",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
                         cmd.Parameters.AddWithValue("@elo", 100);
                         cmd.Parameters.AddWithValue("@wins", 0);
                         cmd.Parameters.AddWithValue("@losses", 0);
+                        cmd.Parameters.AddWithValue("@gamesPlayed", 0);
+                        cmd.Parameters.AddWithValue("@winLooseRatio", 0);
+                        cmd.Parameters.AddWithValue("@username", username);
                         cmd.ExecuteNonQuery();
                     }
 
@@ -208,7 +211,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                     int userId = GetUserId(username).Value;
                     if (userId != null)
                     { 
-                        InitialiseStatsEmpty(userId);
+                        InitialiseStatsEmpty(userId, username);
                     }
                 }
                 catch (Exception e)
@@ -220,6 +223,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         }
 
 
+
         //Update user in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal void UpdateUser(string newUsername, string currentUsername, string newPassword, string image, string bio)
@@ -228,6 +232,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             {
                 try
                 {
+                   
                     var updateQuery = new StringBuilder("UPDATE users SET ");
                     if (!string.IsNullOrEmpty(newUsername))
                     {
@@ -245,7 +250,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                     {
                         updateQuery.Append("image=@image, ");
                     }
-                    
+
+                   
                     if (updateQuery[updateQuery.Length - 2] == ',')
                     {
                         updateQuery.Remove(updateQuery.Length - 2, 2);
@@ -254,10 +260,10 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
                     using (var cmd = new NpgsqlCommand(updateQuery.ToString(), conn))
                     {
-                        
+
                         cmd.Transaction = trans;
 
-                        
+
                         if (!string.IsNullOrEmpty(newUsername))
                         {
                             cmd.Parameters.AddWithValue("@newUsername", newUsername);
@@ -276,18 +282,31 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                             cmd.Parameters.AddWithValue("@image", image);
                         }
 
-                        
+
                         cmd.ExecuteNonQuery();
                     }
+
+                    if (!string.IsNullOrEmpty(newUsername))
+                    {
+                        using (var cmd = new NpgsqlCommand("UPDATE user_stats SET username = @newUsername WHERE username = @currentUsername", conn))
+                        {
+                            cmd.Transaction = trans;
+                            cmd.Parameters.AddWithValue("@newUsername", newUsername);
+                            cmd.Parameters.AddWithValue("@currentUsername", currentUsername);
+                            cmd.ExecuteNonQuery();
+                        }
+                    }
+
                     trans.Commit(); 
                 }
                 catch (Exception e)
                 {
-                    trans.Rollback(); // Rollback the transaction in case of an error
+                    trans.Rollback(); 
                     throw new Exception("Error while updating user", e);
                 }
             });
         }
+
 
         //Get userdata from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

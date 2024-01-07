@@ -131,7 +131,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                         _cardsRepository.TransferCard(requestParameter, userId);
                         _tradingsRepository.DeleteById(requestParameter);
                         return "HTTP/1.0 201 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                               "Deal done!";
+                               "Trading deal successfully executed";
                     }
                     catch (Exception e)
                     {
@@ -143,7 +143,6 @@ namespace MonsterCardTradingGame.BusinessLogic
                     return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            "It is not allowed to deal with your self!";
                 }
-
             }
             try
             {
@@ -178,7 +177,7 @@ namespace MonsterCardTradingGame.BusinessLogic
         internal string GetActiveTradingDeals(int userId)
         {
             return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(new { Trading = _tradingsRepository.CheckTradingDeals(userId) });
+                   JsonSerializer.Serialize(_tradingsRepository.CheckTradingDeals(userId));
         }
 
         internal string DeleteTradingDeal(string requestBody, string requestParameter, int userId)

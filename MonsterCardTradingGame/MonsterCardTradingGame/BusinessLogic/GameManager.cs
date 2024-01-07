@@ -161,7 +161,7 @@ public class GameManager
         return battleResults;
     }
 
-    public string WaitForOtherPlayerAndStartBattle(int userId)
+    public List <string> WaitForOtherPlayerAndStartBattle(int userId)
     {
         Console.WriteLine($"User with ID {userId} is attempting to join the game");
         string res = "";
@@ -202,7 +202,7 @@ public class GameManager
 
        
         if (_lastBattleResult != null && _lastBattleResult.Count > 0)
-        {
+        {   
             foreach (string result in _lastBattleResult)
             {
                 res += result + "\n";
@@ -214,6 +214,6 @@ public class GameManager
             res = "Error: Battle could not be initiated.";
         }
 
-        return res;
+        return _lastBattleResult;
     }
 }

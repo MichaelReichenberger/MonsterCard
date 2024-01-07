@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Npgsql;
+using MonsterCardTradingGame.Models;
 
 namespace MonsterCardTradingGame.DataBase.Repositories
 {
@@ -36,9 +37,10 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Get single users stats from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public string GetStatsFromDB(int userId)
+        public UserStats GetStatsFromDB(int userId)
         {
-            return _dbAccess.ExecuteQuery<string>(conn =>
+            UserStats userStats = null;
+            return _dbAccess.ExecuteQuery<UserStats>(conn =>
             {
                 using (var cmd = new NpgsqlCommand("SELECT * FROM user_stats WHERE user_id = @userId", conn))
                 {
@@ -48,14 +50,17 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         var result = new StringBuilder();
                         while (reader.Read())
                         {
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
-                            }
-                            result.AppendLine();
+                            string username = reader.GetString(reader.GetOrdinal("username"));
+                            int gamesPlayed = reader.GetInt32(reader.GetOrdinal("games_played"));
+                            int wins = reader.GetInt32(reader.GetOrdinal("wins"));
+                            int losses = reader.GetInt32(reader.GetOrdinal("losses"));
+                            double winLossRation = reader.GetDouble(reader.GetOrdinal("win_loose_ratio"));
+                            int elo = reader.GetInt32(reader.GetOrdinal("elo"));
+
+                            userStats = new UserStats(username, gamesPlayed, wins, losses, winLossRation, elo);
                         }
-                        return result.ToString();
                     }
+                    return userStats;
                 }
             });
         }
@@ -64,24 +69,30 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Get scoreboard from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public string GetAllStatsOrderedByElo()
+        public List<UserStats> GetAllStatsOrderedByElo()
         {
-            return _dbAccess.ExecuteQuery<string>(conn =>
+            List<UserStats> scoreBoard = new List<UserStats>();
+            return _dbAccess.ExecuteQuery<List<UserStats>>(conn =>
             {
-                using (var cmd = new NpgsqlCommand("SELECT * FROM user_stats ORDER BY elo DESC", conn))
+                using (var cmd = new NpgsqlCommand("SELECT * FROM user_stats ORDER BY elo", conn))
                 {
+                   
                     using (var reader = cmd.ExecuteReader())
                     {
-                        var result = new StringBuilder();
+                        var cards = new List<Card>();
                         while (reader.Read())
                         {
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
-                            }
-                            result.AppendLine();
+                            string username = reader.GetString(reader.GetOrdinal("username"));
+                            int gamesPlayed = reader.GetInt32(reader.GetOrdinal("games_played"));
+                            int wins = reader.GetInt32(reader.GetOrdinal("wins"));
+                            int losses = reader.GetInt32(reader.GetOrdinal("losses"));
+                            double winLossRation = reader.GetDouble(reader.GetOrdinal("win_loose_ratio"));
+                            int elo = reader.GetInt32(reader.GetOrdinal("elo"));
+                            
+                            UserStats userStats = new UserStats(username, gamesPlayed, wins, losses, winLossRation, elo);
+                            scoreBoard.Add(userStats);
                         }
-                        return result.ToString();
+                        return scoreBoard;
                     }
                 }
             });
@@ -166,7 +177,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 return _dbAccess.ExecuteQuery<string>(conn =>
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "UPDATE user_stats SET elo = elo + 3, wins = wins + 1 WHERE user_id = @userId",
+                               "UPDATE user_stats SET elo = elo + 3, wins = wins + 1, win_loose_ratio = CASE WHEN losses = 0 THEN wins + 1 ELSE (wins + 1) / NULLIF(losses, 0) END WHERE user_id = @userId;",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
@@ -204,7 +215,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 return _dbAccess.ExecuteQuery<string>(conn =>
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "UPDATE user_stats SET elo = elo - 5, losses = losses + 1 WHERE user_id = @userId",
+                               "UPDATE user_stats SET elo = elo - 5, losses = losses + 1, win_loose_ratio = wins/(losses+1) WHERE user_id = @userId",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
@@ -227,6 +238,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
             catch (Exception e)
             {
+                Console.WriteLine(e);
                 throw new Exception("Error while updating stats in DB");
             }
         }

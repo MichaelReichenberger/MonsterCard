@@ -66,7 +66,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             {
                 Console.WriteLine(e.Message);
                 return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       "Access token is missing or invalid or another interal error occured.(It is not allowed to access other users)";
+                       "User not found";
             }
         }
 
@@ -105,7 +105,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             {
                 return
                     "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    $"An error occurred: {ex.Message}";
+                    "User not Found";
             }
         }
 
@@ -143,15 +143,17 @@ namespace MonsterCardTradingGame.BusinessLogic
             
             return
                 "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                JsonSerializer.Serialize(new { Message = _statsRepository.GetStatsFromDB(userId) });
+                JsonSerializer.Serialize(_statsRepository.GetStatsFromDB(userId));
         }
 
-        internal string GetSocreBoard()
+        internal string GetUserScoreboard(int userId)
         {
+
             return
                 "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                JsonSerializer.Serialize(new { Message = _statsRepository.GetAllStatsOrderedByElo() });
+                JsonSerializer.Serialize(_statsRepository.GetAllStatsOrderedByElo());
         }
+
     }
 }
  
