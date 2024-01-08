@@ -71,12 +71,13 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public List<UserStats> GetAllStatsOrderedByElo()
         {
+            string admin = "admin";
             List<UserStats> scoreBoard = new List<UserStats>();
             return _dbAccess.ExecuteQuery<List<UserStats>>(conn =>
             {
-                using (var cmd = new NpgsqlCommand("SELECT * FROM user_stats ORDER BY elo", conn))
+                using (var cmd = new NpgsqlCommand("SELECT * FROM user_stats WHERE username != @admin ORDER BY elo", conn))
                 {
-                   
+                    cmd.Parameters.AddWithValue("@admin", admin);
                     using (var reader = cmd.ExecuteReader())
                     {
                         var cards = new List<Card>();
@@ -177,7 +178,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 return _dbAccess.ExecuteQuery<string>(conn =>
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "UPDATE user_stats SET elo = elo + 3, wins = wins + 1, win_loose_ratio = CASE WHEN losses = 0 THEN wins + 1 ELSE (wins + 1) / NULLIF(losses, 0) END WHERE user_id = @userId;",
+                               "UPDATE user_stats SET elo = elo + 3, wins = wins + 1, games_played = games_played +1, win_loose_ratio = CASE WHEN losses = 0 THEN wins + 1 ELSE (wins + 1) / NULLIF(losses, 0) END WHERE user_id = @userId;",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);
@@ -215,7 +216,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 return _dbAccess.ExecuteQuery<string>(conn =>
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "UPDATE user_stats SET elo = elo - 5, losses = losses + 1, win_loose_ratio = wins/(losses+1) WHERE user_id = @userId",
+                               "UPDATE user_stats SET elo = elo - 5, losses = losses + 1, win_loose_ratio = wins/(losses+1), games_played = games_played +1 WHERE user_id = @userId",
                                conn))
                     {
                         cmd.Parameters.AddWithValue("@userId", userId);

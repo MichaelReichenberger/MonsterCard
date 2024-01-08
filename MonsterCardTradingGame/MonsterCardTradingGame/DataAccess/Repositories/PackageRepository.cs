@@ -54,7 +54,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Insert package to DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public void DeserializeAndInsertPackageToDB(string packageContent)
+        public virtual void DeserializeAndInsertPackageToDB(string packageContent)
         {
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var cards = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(packageContent, options);
@@ -83,9 +83,10 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
                             cmd.ExecuteNonQuery(); // Führen Sie den Befehl aus
                         }
-                    }
+                    } 
                     catch (Exception e)
                     {
+                        Console.WriteLine(e);
                         trans.Rollback();
                         throw new Exception("Error inserting Package"); // Rollback im Fehlerfall
                     }

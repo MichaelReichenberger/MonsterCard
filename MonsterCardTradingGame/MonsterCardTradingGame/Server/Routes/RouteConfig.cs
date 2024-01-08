@@ -34,7 +34,7 @@ namespace MonsterCardTradingGame.Server.Routes
             //Default Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
             _router.AddRoute("GET", "/",
-                (requestbody, requestParameter, r) => { return new ResponseGenerator().GenerateResponse(); });
+                (requestbody, requestParameter, r) => "Hello!");
 
 
             //UserDataRoute
@@ -74,7 +74,7 @@ namespace MonsterCardTradingGame.Server.Routes
 
             //Create trading deal Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            _router.AddRoute("POST", "/tradings", (requestBody, requestParameter, userId) => _transactionManager.CreateTradingDeal(requestBody,requestParameter,userId));
+            _router.AddRoute("POST", "/tradings", (requestBody, requestParameter, userId) => _transactionManager.CreateOrExecuteTradingDeal(requestBody,requestParameter,userId));
 
 
             //Check trading deals Route
@@ -109,9 +109,9 @@ namespace MonsterCardTradingGame.Server.Routes
 
             //Start battle Route
             /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-            _router.AddRoute("POST", "/battle",  (requestBody, requestParameter, userId) =>
+            _router.AddRoute("POST", "/battles",  (requestBody, requestParameter, userId) =>
             {
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "The battle has been carried out successfully.\r\n" + 
                        JsonSerializer.Serialize(_gameManager.WaitForOtherPlayerAndStartBattle(userId));
             });
         }

@@ -100,7 +100,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Check if deal exists
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public bool CheckIfDealExists(string dealId)
+        public virtual bool CheckIfDealExists(string dealId)
         {
             try
             {

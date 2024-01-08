@@ -50,6 +50,7 @@ namespace MonsterCardTradingGame.Server
                 if (line.StartsWith("Authorization: Bearer"))
                 {
                     authToken = line.Substring("Authorization: Bearer".Length).Trim();
+                    Console.WriteLine(authToken);
                 }
             }
 
@@ -57,8 +58,8 @@ namespace MonsterCardTradingGame.Server
             var session = sessionManager.GetSessionByToken(authToken);
             if (session == null && requestUrl != "/sessions" && (requestUrl!="/users" && requestMethod != "POST"))
             {
-                writer.WriteLine("HTTP/1.0 401 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                                 JsonSerializer.Serialize(new { Message = "Access token is missing or invalid" }));
+                writer.WriteLine("HTTP/1.0 401 Unauthorized\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                 "Access token is missing or invalid");
                 return;
             }
 

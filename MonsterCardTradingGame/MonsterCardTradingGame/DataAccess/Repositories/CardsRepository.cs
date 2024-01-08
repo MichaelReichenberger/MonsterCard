@@ -7,9 +7,11 @@ using System.Threading.Tasks;
 using Npgsql;
 using MonsterCardTradingGame.Models;
 using System.Xml.Linq;
+using MonsterCardTradingGame.DataBase;
+using MonsterCardTradingGame.DataBase.Repositories;
 using static System.Net.Mime.MediaTypeNames;
 
-namespace MonsterCardTradingGame.DataBase.Repositories
+namespace MonsterCardTradingGame.DataAccess.Repositories
 {
     public class CardsRepository :IRepository
     {
@@ -35,8 +37,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
-        //Get user cards from DB
-        public List<Card> GetCardsFromDB(int userId)
+        
+        public virtual List<Card> GetCardsFromDB(int userId)
         {
             return _dbAccess.ExecuteQuery<List<Card>>(conn =>
             {
@@ -51,16 +53,48 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                             string name = reader.GetString(reader.GetOrdinal("name"));
                             string elementString = reader.GetString(reader.GetOrdinal("element"));
                             double damage = reader.GetDouble(reader.GetOrdinal("damage"));
-
-                            // Convert the string to the Element enum
+                            string uniqueId = reader.GetString(reader.GetOrdinal("unique_id"));
+                            
                             GameManager.Element element;
                             if (!Enum.TryParse<GameManager.Element>(elementString, true, out element))
                             {
-                                // Handle the case where the element is not valid or throw an exception
+                                
                                 throw new ArgumentException("Invalid element value in database for card: " + name);
                             }
-                            // Create and add the new Card object to the list
-                            Card card = new Card(name, element, damage);
+                            
+                            Card card = new Card(name, element, damage, uniqueId);
+                            cards.Add(card);
+                        }
+                        return cards;
+                    }
+                }
+            });
+        }
+
+        public virtual List<Card> GetAllCardsFromDB()
+        {
+            return _dbAccess.ExecuteQuery<List<Card>>(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT * FROM card_stacks", conn))
+                {
+                    using (var reader = cmd.ExecuteReader())
+                    {
+                        var cards = new List<Card>();
+                        while (reader.Read())
+                        {
+                            string name = reader.GetString(reader.GetOrdinal("name"));
+                            string elementString = reader.GetString(reader.GetOrdinal("element"));
+                            double damage = reader.GetDouble(reader.GetOrdinal("damage"));
+                            string uniqueId = reader.GetString(reader.GetOrdinal("unique_id"));
+
+                            GameManager.Element element;
+                            if (!Enum.TryParse<GameManager.Element>(elementString, true, out element))
+                            {
+
+                                throw new ArgumentException("Invalid element value in database for card: " + name);
+                            }
+
+                            Card card = new Card(name, element, damage, uniqueId);
                             cards.Add(card);
                         }
                         return cards;
@@ -70,7 +104,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         }
 
 
-        public Card GetCardModelFromDB(string uniqueId)
+        public virtual Card GetCardModelFromDB(string uniqueId)
         {
             return _dbAccess.ExecuteQuery<Card>(conn =>
             {
@@ -84,16 +118,16 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                             string name = reader.GetString(reader.GetOrdinal("name"));
                             string elementString = reader.GetString(reader.GetOrdinal("element"));
                             double damage = reader.GetDouble(reader.GetOrdinal("damage"));
-
-                            // Convert the string to the Element enum
+                            string uniqueId = reader.GetString(reader.GetOrdinal("unique_id"));
+                            
                             GameManager.Element element;
                             if (!Enum.TryParse<GameManager.Element>(elementString, true, out element))
                             {
-                                // Handle the case where the element is not valid or throw an exception
+                                
                                 throw new ArgumentException("Invalid element value in database for card: " + uniqueId);
                             }
-                            // Create and return the new Card object
-                            Card card = new Card(name, element, damage);
+                            
+                            Card card = new Card(name, element, damage, uniqueId);
                             return card;
                         }
                         else

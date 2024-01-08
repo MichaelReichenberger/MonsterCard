@@ -4,7 +4,7 @@ using Npgsql;
 
 namespace MonsterCardTradingGame.DataBase
 {
-    internal class DBAccess
+    public class DBAccess
     {
         private readonly string _connString;
 

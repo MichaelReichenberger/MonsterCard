@@ -26,13 +26,17 @@ namespace MonsterCardTradingGame.Server.Sessions
             }
         }
 
-        public string GenerateToken(string username)
+        public virtual string GenerateToken(string username)
         {
             return username+"-mctgToken";
         }
 
-        public string CreateSession(string token, int userId)
+        public virtual string CreateSession(string token, int userId)
         {
+            if (_sessions.FirstOrDefault(session => session.Token == token) != null)
+            {
+                return "User already logged in";
+            }
             var sessionId = Guid.NewGuid().ToString();
             var newSession = new UserSession { SessionId = sessionId, Token = token, UserID = userId};
             _sessions.Add(newSession);
@@ -40,7 +44,7 @@ namespace MonsterCardTradingGame.Server.Sessions
             return sessionId;
         }
 
-        public UserSession GetSessionByToken(string token)
+        public virtual UserSession GetSessionByToken(string token)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -49,7 +53,7 @@ namespace MonsterCardTradingGame.Server.Sessions
             return _sessions.FirstOrDefault(session => session.Token == token);
         }
 
-        public int GetUserIdBySessionId(string sessionId)
+        public virtual int GetUserIdBySessionId(string sessionId)
         {
             if (string.IsNullOrEmpty(sessionId))
             {
@@ -63,7 +67,7 @@ namespace MonsterCardTradingGame.Server.Sessions
             return session.UserID;
         }
 
-        public int GetUserIDByToken(string token)
+        public virtual int GetUserIDByToken(string token)
         {
             if (string.IsNullOrEmpty(token))
             {
@@ -83,7 +87,7 @@ namespace MonsterCardTradingGame.Server.Sessions
             return session.UserID;
         }
 
-        public string GetTokenByUserId(int userId)
+        public virtual string GetTokenByUserId(int userId)
         {
             var session = _sessions.FirstOrDefault(session => session.UserID == userId);
             if (session == null)

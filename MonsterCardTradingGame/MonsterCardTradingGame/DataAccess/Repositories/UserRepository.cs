@@ -67,7 +67,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Help functions
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal int? GetUserId(string username)
+        public int? GetUserId(string username)
         {
             return _dbAccess.ExecuteQuery(conn =>
             {
@@ -79,7 +79,19 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        internal string GetPasswordByUsername(string username)
+        public int GetUserIdForTest(string username)
+        {
+            return _dbAccess.ExecuteQuery(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT u.user_id FROM users u WHERE u.username = @username;", conn))
+                {
+                    cmd.Parameters.AddWithValue("@username", username);
+                    return (int)cmd.ExecuteScalar();
+                }
+            });
+        }
+
+        public virtual string GetPasswordByUsername(string username)
         {
             return _dbAccess.ExecuteQuery(conn =>
             {
@@ -117,7 +129,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        internal void SubstractCoins(int userId, int coins)
+        public void SubstractCoins(int userId, int coins)
         {
             _dbAccess.ExecuteTransaction((conn, trans) =>
             {
@@ -172,30 +184,29 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Add user to DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal void AddUser(string username, string password, string image, string bio)
+        public virtual void AddUser(string username, string password, string image, string bio, string name)
         {
             _dbAccess.ExecuteTransaction((conn, trans) =>
             {
                 try
                 {
                     using (var cmd = new NpgsqlCommand(
-                               "INSERT INTO users (username, password, level, coins, bio, image, role) VALUES (@username, @password, @level, @coins, @bio, @image, @role);",
+                               "INSERT INTO users (username, password, level, coins, bio, image, role, name) VALUES (@username, @password, @level, @coins, @bio, @image, @role, @name);",
                                conn))
                     {
                         
                         cmd.Transaction = trans;
-
-                        
                         image = String.IsNullOrEmpty(image) ? "-" : image;
                         bio = String.IsNullOrEmpty(bio) ? "-" : bio;
+                        name = String.IsNullOrEmpty(name) ? "-" : name;
 
-                       
                         cmd.Parameters.AddWithValue("@username", username);
                         cmd.Parameters.AddWithValue("@password", password);
                         cmd.Parameters.AddWithValue("@bio", bio);
                         cmd.Parameters.AddWithValue("@image", image);
                         cmd.Parameters.AddWithValue("@level", 0);
-                        cmd.Parameters.AddWithValue("@coins", 80);
+                        cmd.Parameters.AddWithValue("@coins", 20);
+                        cmd.Parameters.AddWithValue("@name", name);
                         if (username == "admin")
                         {
                             cmd.Parameters.AddWithValue("@role", "admin");
@@ -217,16 +228,17 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 catch (Exception e)
                 {
                     trans.Rollback(); 
-                    throw new Exception("Error while adding user.");
+                    throw new Exception("User with same username already registered");
                 }
             });
         }
 
 
 
+
         //Update user in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal void UpdateUser(string newUsername, string currentUsername, string newPassword, string image, string bio)
+        public void UpdateUser(string newName, string currentUsername, string newPassword, string image, string bio)
         {
             _dbAccess.ExecuteTransaction((conn, trans) =>
             {
@@ -234,9 +246,9 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 {
                    
                     var updateQuery = new StringBuilder("UPDATE users SET ");
-                    if (!string.IsNullOrEmpty(newUsername))
+                    if (!string.IsNullOrEmpty(newName))
                     {
-                        updateQuery.Append("username = @newUsername, ");
+                        updateQuery.Append("name = @newName, ");
                     }
                     if (!string.IsNullOrEmpty(newPassword))
                     {
@@ -264,9 +276,9 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         cmd.Transaction = trans;
 
 
-                        if (!string.IsNullOrEmpty(newUsername))
+                        if (!string.IsNullOrEmpty(newName))
                         {
-                            cmd.Parameters.AddWithValue("@newUsername", newUsername);
+                            cmd.Parameters.AddWithValue("@newName", newName);
                         }
                         if (!string.IsNullOrEmpty(newPassword))
                         {
@@ -286,12 +298,12 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                         cmd.ExecuteNonQuery();
                     }
 
-                    if (!string.IsNullOrEmpty(newUsername))
+                    if (!string.IsNullOrEmpty(newName))
                     {
                         using (var cmd = new NpgsqlCommand("UPDATE user_stats SET username = @newUsername WHERE username = @currentUsername", conn))
                         {
                             cmd.Transaction = trans;
-                            cmd.Parameters.AddWithValue("@newUsername", newUsername);
+                            cmd.Parameters.AddWithValue("@newUsername", newName);
                             cmd.Parameters.AddWithValue("@currentUsername", currentUsername);
                             cmd.ExecuteNonQuery();
                         }
@@ -310,7 +322,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Get userdata from DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        internal User GetUserData(int userId)
+        public User GetUserData(int userId)
         {
             try
             {
@@ -322,7 +334,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                     if (reader.Read())
                     {
                         var user = new User();
-                        user.Name = reader.GetString(reader.GetOrdinal("username"));
+                        user.Username = reader.GetString(reader.GetOrdinal("username"));
+                        user.Name = reader.GetString(reader.GetOrdinal("Name"));
                         user.Coins = reader.GetInt32(reader.GetOrdinal("coins"));
                         user.Level = reader.GetInt32(reader.GetOrdinal("level"));
                         user.UserId = reader.GetInt32(reader.GetOrdinal("user_id"));
@@ -340,8 +353,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 throw new Exception("Error while getting user data", e); // Added original exception to the throw statement for better debugging
             }
         }
-        
-        internal User GetUserCredentials(string username)
+
+        public virtual User GetUserCredentials(string username)
         {
             try
             {
@@ -367,7 +380,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
         }
 
-        internal string GetRole(int userId)
+        public virtual string GetRole(int userId)
         {
             return _dbAccess.ExecuteQuery(conn =>
             {

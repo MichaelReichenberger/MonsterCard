@@ -13,7 +13,7 @@ public class GameManager
     private static GameManager instance = null;
     private static readonly object instanceLockObject = new object();
 
-    private static OR_Mapper _orMapper;
+    private static Mapper _mapper;
     private CardDeck _playerOneCards;
     private CardDeck _playerTwoCards;
 
@@ -30,9 +30,9 @@ public class GameManager
     private StatsRepository _statsRepository;
 
     
-    private GameManager()
+    public GameManager()
     {
-        _orMapper = new OR_Mapper();
+        _mapper = new Mapper();
         _lastBattleResult = null;  
         _userRepository = new UserRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
         _statsRepository = new StatsRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
@@ -61,34 +61,107 @@ public class GameManager
 
     public int CardFight(Card playerOneCard, Card playerTwoCard)
     {
-        // Handle special cases
-        if (playerOneCard.Name == "Goblin" && playerTwoCard.Name == "Dragon") return 1;
-        if (playerTwoCard.Name == "Goblin" && playerOneCard.Name == "Dragon") return -1;
-        if (playerOneCard.Name == "Wizard" && playerTwoCard.Name == "Ork") return -1;
-        if (playerTwoCard.Name == "Wizard" && playerOneCard.Name == "Ork") return 1;
-        if (playerOneCard.Name == "Knight" && playerTwoCard.Element == Element.Water && playerTwoCard.Name == "Spell") return 1;
-        if (playerTwoCard.Name == "Knight" && playerOneCard.Element == Element.Water && playerOneCard.Name == "Spell") return -1;
-        if (playerOneCard.Name == "Kraken" || playerTwoCard.Name == "Kraken") return 0; // Kraken is immune
+        
+        if (playerOneCard.CurrentWins >=3 && playerTwoCard.CurrentWins <3)
+        {
+            playerOneCard.CurrentWins = 0;
+            return 1;
+        }
 
-        // Calculate damage modifiers for elemental advantage
+        if (playerTwoCard.CurrentWins >= 3 && playerOneCard.CurrentWins <3)
+        {
+            playerTwoCard.CurrentWins = 0;
+            return 2;
+        }
+        
+        if (playerOneCard.Name == "Goblin" && playerTwoCard.Name == "Dragon")
+        {
+            playerTwoCard.CurrentWins++;
+            return 2;
+        }
+        if (playerTwoCard.Name == "Goblin" && playerOneCard.Name == "Dragon")
+        {
+            playerOneCard.CurrentWins++;
+            return 1;
+        }
+        if (playerOneCard.Name == "Wizard" && playerTwoCard.Name == "Ork")
+        {
+            playerOneCard.CurrentWins++;
+            return 1;
+        }
+        if (playerTwoCard.Name == "Wizard" && playerOneCard.Name == "Ork")
+        {
+            playerTwoCard.CurrentWins++;
+            return 2;
+        }
+        if (playerOneCard.Name == "Knight" && playerTwoCard.Element == Element.Water && playerTwoCard.Name == "Spell")
+        {
+            playerTwoCard.CurrentWins++;
+            return 2;
+        }
+
+        if (playerTwoCard.Name == "Knight" && playerOneCard.Element == Element.Water && playerOneCard.Name == "Spell")
+        {
+            playerOneCard.CurrentWins++;
+            return 1;
+        }
+
+        if (playerOneCard.Name == "Dragon" && playerTwoCard.Element == Element.Fire && playerTwoCard.Name == "Elve")
+        {
+            playerTwoCard.CurrentWins++;
+            return 2;
+        }
+
+        if (playerTwoCard.Name == "Elve" && playerTwoCard.Element == Element.Fire && playerOneCard.Name == "Dragon")
+        {
+            playerOneCard.CurrentWins++;
+            return 1;
+        }
+       
+
         double damagePlayerOne = playerOneCard.Damage;
         double damagePlayerTwo = playerTwoCard.Damage;
 
-        if (playerOneCard.Element == Element.Water && playerTwoCard.Element == Element.Fire) damagePlayerOne *= 2;
-        if (playerOneCard.Element == Element.Fire && playerTwoCard.Element == Element.Water) damagePlayerOne /= 2;
-        if (playerTwoCard.Element == Element.Water && playerOneCard.Element == Element.Fire) damagePlayerTwo *= 2;
-        if (playerTwoCard.Element == Element.Fire && playerOneCard.Element == Element.Water) damagePlayerTwo /= 2;
-        if (playerOneCard.Element == Element.Fire && playerTwoCard.Element == Element.Normal) damagePlayerOne *= 2;
-        if (playerOneCard.Element == Element.Normal && playerTwoCard.Element == Element.Fire) damagePlayerOne /= 2;
-        if (playerTwoCard.Element == Element.Fire && playerOneCard.Element == Element.Normal) damagePlayerTwo *= 2;
-        if (playerTwoCard.Element == Element.Normal && playerOneCard.Element == Element.Fire) damagePlayerTwo /= 2;
-        if (playerOneCard.Element == Element.Normal && playerTwoCard.Element == Element.Water) damagePlayerOne *= 2;
-        if (playerOneCard.Element == Element.Water && playerTwoCard.Element == Element.Normal) damagePlayerOne /= 2;
-        if (playerTwoCard.Element == Element.Normal && playerOneCard.Element == Element.Water) damagePlayerTwo *= 2;
-        if (playerTwoCard.Element == Element.Water && playerOneCard.Element == Element.Normal) damagePlayerTwo /= 2;
+        if (playerOneCard.Type == "Spell" || playerTwoCard.Type == "Spell" || (playerOneCard.Type == "Spell" && playerTwoCard.Type == "Spell"))
+        {
+            if (playerOneCard.Name != "Kraken" && playerTwoCard.Name != "Kraken")
+            {
+                if (playerOneCard.Element == Element.Water && playerTwoCard.Element == Element.Fire) damagePlayerOne *= 2;
+                if (playerOneCard.Element == Element.Fire && playerTwoCard.Element == Element.Water) damagePlayerOne /= 2;
+                if (playerTwoCard.Element == Element.Water && playerOneCard.Element == Element.Fire) damagePlayerTwo *= 2;
+                if (playerTwoCard.Element == Element.Fire && playerOneCard.Element == Element.Water) damagePlayerTwo /= 2;
+                if (playerOneCard.Element == Element.Fire && playerTwoCard.Element == Element.Normal) damagePlayerOne *= 2;
+                if (playerOneCard.Element == Element.Normal && playerTwoCard.Element == Element.Fire) damagePlayerOne /= 2;
+                if (playerTwoCard.Element == Element.Fire && playerOneCard.Element == Element.Normal) damagePlayerTwo *= 2;
+                if (playerTwoCard.Element == Element.Normal && playerOneCard.Element == Element.Fire) damagePlayerTwo /= 2;
+                if (playerOneCard.Element == Element.Normal && playerTwoCard.Element == Element.Water) damagePlayerOne *= 2;
+                if (playerOneCard.Element == Element.Water && playerTwoCard.Element == Element.Normal) damagePlayerOne /= 2;
+                if (playerTwoCard.Element == Element.Normal && playerOneCard.Element == Element.Water) damagePlayerTwo *= 2;
+                if (playerTwoCard.Element == Element.Water && playerOneCard.Element == Element.Normal) damagePlayerTwo /= 2;
+            }
+            else if (playerOneCard.Name == "Kraken" && playerTwoCard.Name == "Spell")
+            {
+                playerOneCard.CurrentWins++;
+                return 1;
+            }
+            else if (playerTwoCard.Name == "Kraken" && playerOneCard.Name == "Spell")
+            {
+                playerTwoCard.CurrentWins++;
+                return 2;
+            }
+        }
 
-        if (damagePlayerOne > damagePlayerTwo) return -1;
-        if (damagePlayerTwo > damagePlayerOne) return 1;
+        if (damagePlayerOne > damagePlayerTwo)
+        {
+            playerOneCard.CurrentWins++;
+            return 1;
+        }
+
+        if (damagePlayerTwo > damagePlayerOne)
+        {
+            playerTwoCard.CurrentWins++;
+            return 2;
+        }
         return 0;
     }
 
@@ -97,8 +170,11 @@ public class GameManager
         List<string> battleResults = new List<string>();
         Random rand = new Random();
         string winner;
-        while (player1Deck.Deck.Count > 0 && player2Deck.Deck.Count > 0)
+        int rounds = 0;
+        while (player1Deck.Deck.Count > 0 && player2Deck.Deck.Count > 0 && rounds <=100)
         {
+            Console.WriteLine(username1);
+            Console.WriteLine(username2);
             int i = rand.Next(player1Deck.Deck.Count);
             int j = rand.Next(player2Deck.Deck.Count);
 
@@ -108,23 +184,24 @@ public class GameManager
                 Card player2Card = player2Deck.Deck[j];
                 int fightResult = CardFight(player1Card, player2Card);
 
-                if (fightResult == -1)
+                if (fightResult == 1)
                 {
                     battleResults.Add($"{username1} wins with {player1Card.Name} against {player2Card.Name}");
-                    player2Deck.Deck.Add(player1Card);
-                    player1Deck.Deck.Remove(player1Card);
-                }
-                else if (fightResult == 1)
-                {
-                    battleResults.Add($"{username2} wins with {player2Card.Name} against {player1Card.Name}");
                     player1Deck.Deck.Add(player2Card);
                     player2Deck.Deck.Remove(player2Card);
+                }
+                else if (fightResult == 2)
+                {
+                    battleResults.Add($"{username2} wins with {player2Card.Name} against {player1Card.Name}");
+                    player2Deck.Deck.Add(player1Card);
+                    player1Deck.Deck.Remove(player1Card);
                 }
                 else
                 {
                     battleResults.Add($"Draw between {player1Card.Name} and {player2Card.Name}");
                 }
             }
+            rounds++;
         }
         if (player1Deck.Deck.Count == 0)
         {
@@ -174,7 +251,7 @@ public class GameManager
             if (playerCount == 1)
             {   
                 Console.WriteLine("User 1 joined, waiting for another player...");
-                _playerOneCards = _orMapper.ParseCardDeck(userId);
+                _playerOneCards = _mapper.ParseCardDeck(userId);
                 _username1 = _userRepository.GetUsername(userId);
                 _userId1 = userId;
                 Console.WriteLine(_username1);
@@ -183,7 +260,7 @@ public class GameManager
             else if (playerCount == 2)
             {   
                 Console.WriteLine("User 2 joined, starting the battle...");
-                _playerTwoCards = _orMapper.ParseCardDeck(userId);
+                _playerTwoCards = _mapper.ParseCardDeck(userId);
                 _username2 = _userRepository.GetUsername(userId);
                 _userId2 = userId;
                 Console.WriteLine(_username2);
