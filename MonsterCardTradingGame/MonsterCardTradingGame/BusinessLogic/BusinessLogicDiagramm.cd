@@ -7,13 +7,6 @@
       <FileName>BusinessLogic\CardManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="GameManager" Collapsed="true">
-    <Position X="4.25" Y="3.25" Width="1.5" />
-    <TypeIdentifier>
-      <HashCode>ABACgAggBAAQAAAQQAIBAAAAIAVAAAQAQAAAAABAgAA=</HashCode>
-      <FileName>BusinessLogic\GameManager.cs</FileName>
-    </TypeIdentifier>
-  </Class>
   <Class Name="MonsterCardTradingGame.BusinessLogic.Mapper" Collapsed="true">
     <Position X="6.5" Y="4" Width="1.5" />
     <TypeIdentifier>
@@ -40,6 +33,13 @@
     <TypeIdentifier>
       <HashCode>EAAAAAAhAAAAAAACAgIAAAAAAAAAAAQAAAAAAAAIAAA=</HashCode>
       <FileName>BusinessLogic\UserManager.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="GameManager" Collapsed="true">
+    <Position X="4.25" Y="3.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ABACgAggBAAQAAEQQAIBAAAAIAVAAAQAQAAAAABAgAA=</HashCode>
+      <FileName>BusinessLogic\GameManager.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Font Name="Segoe UI" Size="9" />

@@ -54,6 +54,7 @@ namespace MonsterCardTradingGame.Server
                 }
             }
 
+            // Check if Session is valid
             var sessionManager = SessionManager.Instance;
             var session = sessionManager.GetSessionByToken(authToken);
             if (session == null && requestUrl != "/sessions" && (requestUrl!="/users" && requestMethod != "POST"))

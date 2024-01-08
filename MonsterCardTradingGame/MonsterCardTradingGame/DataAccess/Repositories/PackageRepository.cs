@@ -31,6 +31,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
+        //Get next package id
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public int GetNextId()
         {
             return _dbAccess.ExecuteQuery<int>(conn =>

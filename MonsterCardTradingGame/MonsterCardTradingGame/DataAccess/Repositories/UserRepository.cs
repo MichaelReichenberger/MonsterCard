@@ -65,8 +65,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        //Help functions
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        
         public int? GetUserId(string username)
         {
             return _dbAccess.ExecuteQuery(conn =>
@@ -79,6 +78,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+        //Get user id for testing
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public int GetUserIdForTest(string username)
         {
             return _dbAccess.ExecuteQuery(conn =>
@@ -105,7 +106,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         
 
-        internal string GetUsername(int userId)
+        internal string GetUserName(int userId)
         {
             return _dbAccess.ExecuteQuery(conn =>
             {
@@ -117,6 +118,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+        //Get coins from user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal int GetCoins(int userId)
         {
             return _dbAccess.ExecuteQuery(conn =>
@@ -129,6 +132,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+        //Substract coins from user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void SubstractCoins(int userId, int coins)
         {
             _dbAccess.ExecuteTransaction((conn, trans) =>
@@ -152,6 +157,9 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
+
+        //Initialise stats for new user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void InitialiseStatsEmpty(int userId, string username)
         {
             _dbAccess.ExecuteTransaction((conn, transaction) =>
@@ -385,6 +393,18 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             return _dbAccess.ExecuteQuery(conn =>
             {
                 using (var cmd = new NpgsqlCommand("SELECT role FROM users WHERE user_id = @userId;", conn))
+                {
+                    cmd.Parameters.AddWithValue("@userId", userId);
+                    return Convert.ToString(cmd.ExecuteScalar());
+                }
+            });
+        }
+
+        public string GetName(int userId)
+        {
+            return _dbAccess.ExecuteQuery(conn =>
+            {
+                using (var cmd = new NpgsqlCommand("SELECT name FROM users WHERE user_id = @userId;", conn))
                 {
                     cmd.Parameters.AddWithValue("@userId", userId);
                     return Convert.ToString(cmd.ExecuteScalar());

@@ -26,24 +26,37 @@ namespace MonsterCardTradingGame.Server.Sessions
             }
         }
 
+
+        //Generate session token
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public virtual string GenerateToken(string username)
         {
             return username+"-mctgToken";
         }
 
+
+        //Create session
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public virtual string CreateSession(string token, int userId)
         {
+
+            //Check if user is already logged in
             if (_sessions.FirstOrDefault(session => session.Token == token) != null)
             {
                 return "User already logged in";
             }
             var sessionId = Guid.NewGuid().ToString();
             var newSession = new UserSession { SessionId = sessionId, Token = token, UserID = userId};
+
+            //Add session to session list
             _sessions.Add(newSession);
             Console.WriteLine($"Session erstellt: SessionId={newSession.SessionId}, Token={newSession.Token}");
             return sessionId;
         }
 
+
+        //Get session by Token
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public virtual UserSession GetSessionByToken(string token)
         {
             if (string.IsNullOrEmpty(token))

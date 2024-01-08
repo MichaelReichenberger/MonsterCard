@@ -21,6 +21,9 @@ namespace MonsterCardTradingGame.BusinessLogic
             _deckRepository = new DeckRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
         }
 
+
+        //Get cards from a specific user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal string GetUserCards(string requestBody, string requestParameter, int userId)
         {
             if (userId > 0)
@@ -47,6 +50,9 @@ namespace MonsterCardTradingGame.BusinessLogic
                    "Invalid user_id";
         }
 
+
+        //Configure the deck of a specific user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal string ConfigureDeck(string requestBody,string requestParameter, int userId)
         {
             try
@@ -57,6 +63,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 {
                     foreach (var cardId in CardIds)
                     {
+                        //Check if the user owns the card
                         if (!_cardsRepository.CheckIfUserOwnsCard(userId, cardId))
                             return
                                 "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
@@ -83,6 +90,9 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
         }
 
+
+        //Get the deck of a specific user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal string GetDeck(int userId)
         {
             try

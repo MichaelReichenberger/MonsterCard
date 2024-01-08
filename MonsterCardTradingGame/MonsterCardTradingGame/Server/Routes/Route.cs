@@ -16,6 +16,7 @@
             _isAsync = false;
         }
 
+        //Constructor for async actions
         public Route(string method, string url, AsyncRouteAction action)
         {
             Method = method;
@@ -24,6 +25,7 @@
             _isAsync = true;
         }
 
+        //Execute the action
         public async Task<string> Execute(string requestBody, string requestParameter, int userId)
         {
             return _isAsync ? await _asyncAction(requestBody, requestParameter, userId)
