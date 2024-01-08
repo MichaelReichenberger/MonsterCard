@@ -350,7 +350,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                throw new Exception("Error while getting user data", e); // Added original exception to the throw statement for better debugging
+                throw new Exception("Error while getting user data", e); 
             }
         }
 
@@ -376,7 +376,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
-                throw new Exception("Error while getting user data", e); // Added original exception to the throw statement for better debugging
+                throw new Exception("Error while getting user data", e); 
             }
         }
 

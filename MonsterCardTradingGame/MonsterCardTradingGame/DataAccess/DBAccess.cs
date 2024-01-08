@@ -25,7 +25,7 @@ namespace MonsterCardTradingGame.DataBase
             using (var conn = CreateConnection())
             {
                 return queryFunction(conn);
-            } // The connection is automatically closed and disposed here
+            } 
         }
 
         public void ExecuteTransaction(Action<NpgsqlConnection, NpgsqlTransaction> transactionAction)

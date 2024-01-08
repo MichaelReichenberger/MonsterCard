@@ -10,15 +10,15 @@
   <Class Name="GameManager" Collapsed="true">
     <Position X="4.25" Y="3.25" Width="1.5" />
     <TypeIdentifier>
-      <HashCode>ABACgAggBAAQAAAQQAIAAAAAIAVAAAQAQCAAAABAgAA=</HashCode>
+      <HashCode>ABACgAggBAAQAAAQQAIBAAAAIAVAAAQAQAAAAABAgAA=</HashCode>
       <FileName>BusinessLogic\GameManager.cs</FileName>
     </TypeIdentifier>
   </Class>
-  <Class Name="MonsterCardTradingGame.BusinessLogic.OR_Mapper" Collapsed="true">
+  <Class Name="MonsterCardTradingGame.BusinessLogic.Mapper" Collapsed="true">
     <Position X="6.5" Y="4" Width="1.5" />
     <TypeIdentifier>
       <HashCode>AAAAAAAAAAAAAAAAAAAACAIAAAEAAAAAAAQAAAAAAAA=</HashCode>
-      <FileName>BusinessLogic\OR-Mapper.cs</FileName>
+      <FileName>BusinessLogic\Mapper.cs</FileName>
     </TypeIdentifier>
   </Class>
   <Class Name="MonsterCardTradingGame.BusinessLogic.Parser" Collapsed="true">
