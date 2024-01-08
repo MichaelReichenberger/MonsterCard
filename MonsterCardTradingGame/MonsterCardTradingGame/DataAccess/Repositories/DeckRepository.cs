@@ -113,7 +113,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                                     throw new ArgumentException("Invalid element value in database for card: " + uniqueId);
                                 }
                                 // Create and return the new Card object
-                                Card card = new Card(name, element, damage);
+                                Card card = new Card(name, element, damage, uniqueId);
                                 cards.Add(card);
                             }
                             return cards;
@@ -131,7 +131,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Get UniqueId from deck by userId
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public string GetDeckUniqueIdsByUserId(int userId)
+        public virtual string GetDeckUniqueIdsByUserId(int userId)
         {
             try
             {

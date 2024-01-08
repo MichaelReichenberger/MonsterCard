@@ -38,14 +38,13 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 using (var cmd = new NpgsqlCommand("SELECT MAX(package_id) FROM packages", conn))
                 {
                     object result = cmd.ExecuteScalar();
-                    // Überprüfen, ob das Ergebnis NULL ist (d.h. keine Einträge in der Tabelle)
                     if (result == DBNull.Value)
                     {
-                        return 1; // Keine Einträge vorhanden, also 1 zurückgeben
+                        return 1; 
                     }
                     else
                     {
-                        return Convert.ToInt32(result) + 1; // MAX(package_id) + 1 zurückgeben
+                        return Convert.ToInt32(result) + 1; 
                     }
                 }
             });
@@ -54,13 +53,13 @@ namespace MonsterCardTradingGame.DataBase.Repositories
 
         //Insert package to DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        public void DeserializeAndInsertPackageToDB(string packageContent)
+        public virtual void DeserializeAndInsertPackageToDB(string packageContent)
         {
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var cards = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(packageContent, options);
             int nextId = GetNextId();
 
-            _dbAccess.ExecuteTransaction((conn, trans) => // Beginn der Transaktion
+            _dbAccess.ExecuteTransaction((conn, trans) => 
             {
                 foreach (var card in cards)
                 {
@@ -72,25 +71,26 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                                    "INSERT INTO packages (package_id, unique_id, name, element, damage) VALUES (@package_id, @unique_id, @name, @element, @damage)",
                                    conn))
                         {
-                            cmd.Transaction = trans; // Zuweisen der Transaktion
+                            cmd.Transaction = trans; 
 
-                            // Füge die Parameter hinzu
+                            
                             cmd.Parameters.AddWithValue("@package_id", nextId);
                             cmd.Parameters.AddWithValue("@unique_id", card["Id"].ValueKind != JsonValueKind.Null ? card["Id"].GetString() : DBNull.Value);
                             cmd.Parameters.AddWithValue("@name", CardTuple.Name);
                             cmd.Parameters.AddWithValue("@element", CardTuple.Element);
                             cmd.Parameters.AddWithValue("@damage", damage);
 
-                            cmd.ExecuteNonQuery(); // Führen Sie den Befehl aus
+                            cmd.ExecuteNonQuery(); 
                         }
-                    }
+                    } 
                     catch (Exception e)
                     {
+                        Console.WriteLine(e);
                         trans.Rollback();
-                        throw new Exception("Error inserting Package"); // Rollback im Fehlerfall
+                        throw new Exception("Error inserting Package"); 
                     }
                 }
-                trans.Commit(); // Commit am Ende aller Einfügungen
+                trans.Commit(); 
             });
         }
 
@@ -127,14 +127,14 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                 {
                     using (var cmd = new NpgsqlCommand("DELETE FROM packages WHERE package_id IN (SELECT MIN(package_id) FROM packages)", conn))
                     {
-                        cmd.Transaction = trans;  // Assign the transaction
-                        cmd.ExecuteNonQuery();  // Execute the command
+                        cmd.Transaction = trans;  
+                        cmd.ExecuteNonQuery();  
                     }
-                    trans.Commit();  // Commit the transaction after all operations
+                    trans.Commit();  
                 }
                 catch (Exception e)
                 {
-                    trans.Rollback();  // Rollback the transaction in case of an error
+                    trans.Rollback();  
                     throw new Exception("Error while removing first package", e);
                 }
             });
@@ -154,18 +154,18 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                                "INSERT INTO card_stacks (user_id, unique_id, name, element, damage) SELECT @user_id, unique_id, name, element, damage FROM packages WHERE package_id IN (SELECT MIN(package_id) FROM packages)",
                                conn))
                     {
-                        cmd.Transaction = trans;  // Assign the transaction
+                        cmd.Transaction = trans;  
 
                         // Add the parameter
                         cmd.Parameters.AddWithValue("@user_id", userId);
 
-                        cmd.ExecuteNonQuery();  // Execute the command
+                        cmd.ExecuteNonQuery();  
                     }
-                    trans.Commit();  // Commit the transaction after all operations
+                    trans.Commit();  
                 }
                 catch (Exception e)
                 {
-                    trans.Rollback();  // Rollback the transaction in case of an error
+                    trans.Rollback(); 
                     throw new Exception("Error while transferring package to stack", e);
                 }
             });

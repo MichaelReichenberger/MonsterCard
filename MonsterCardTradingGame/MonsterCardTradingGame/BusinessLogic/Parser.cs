@@ -93,8 +93,8 @@ namespace MonsterCardTradingGame.BusinessLogic
         {
             if (string.IsNullOrWhiteSpace(strInput)) { return false; }
             strInput = strInput.Trim();
-            if ((strInput.StartsWith("{") && strInput.EndsWith("}")) || //For object
-                (strInput.StartsWith("[") && strInput.EndsWith("]"))) //For array
+            if ((strInput.StartsWith("{") && strInput.EndsWith("}")) || 
+                (strInput.StartsWith("[") && strInput.EndsWith("]"))) 
             {
                 try
                 {
@@ -104,7 +104,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 }
                 catch (JsonReaderException jex)
                 {
-                    //Exception in parsing json
+                    
                     Console.WriteLine("============INPUT IS INVALID===============" + jex.Message);
                     return false;
                 }
@@ -121,7 +121,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
         }
 
-        public List<string>ParseUniqueIds(List<string> deckIds)
+        public virtual List<string>ParseUniqueIds(List<string> deckIds)
         {
             List<string> filteredIds = deckIds.Where(id => !String.IsNullOrEmpty(id)).ToList();
             for (int i = 0; i < filteredIds.Count; i++)

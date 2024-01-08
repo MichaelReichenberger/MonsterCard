@@ -18,23 +18,6 @@ namespace MonsterCardTradingGame.Server
             routes.Add(new Route(method, url, action));
         }
 
-        public List<Route> GetRoutes()
-        {
-            return routes;
-        }
-
-        public Route GetRoute(string method, string url)
-        {
-            foreach (var route in routes)
-            {
-                if (route.Method == method && route.Url == url)
-                {
-                    return route;
-                }
-            }
-            return null;
-        }
-
         public async Task<string> HandleRequest(string method, string url, string requestBody, string requestParameter, int userId)
         {
             foreach (var route in routes)

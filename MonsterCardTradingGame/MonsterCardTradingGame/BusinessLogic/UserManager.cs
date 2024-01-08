@@ -9,7 +9,7 @@ using MonsterCardTradingGame.Server.Sessions;
 
 namespace MonsterCardTradingGame.BusinessLogic
 {
-    internal class UserManager
+    public class UserManager
     {
         private UserRepository _userRepository;
         private StatsRepository _statsRepository;
@@ -34,12 +34,12 @@ namespace MonsterCardTradingGame.BusinessLogic
 
                 string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
                 string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
+               
+
+                _userRepository.AddUser(username, password, image, bio, null); // If an error occurs, it will go to catch block
 
                 
-                _userRepository.AddUser(username, password, image, bio); // If an error occurs, it will go to catch block
-
-                
-                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "User successfully created: "+
+                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "User successfully created\r\n " +
                        JsonSerializer.Serialize(_userRepository.GetUserCredentials(username));
             }
             catch (Exception e)
@@ -59,7 +59,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                     return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            "Access token is missing or invalid";
                 }
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +"Data sucessfully retrieved: "+
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "Data sucessfully retrieved\r\n " +
                        JsonSerializer.Serialize(_userRepository.GetUserData(userId));
             }
             catch (Exception e)
@@ -76,20 +76,20 @@ namespace MonsterCardTradingGame.BusinessLogic
             {
                 if (_userRepository.GetUserId(requestParameter) != userId && _userRepository.GetRole(userId) != "admin")
                 {
-                    return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                    return "HTTP/1.0 401 Unauthorized\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            "Access token is missing or invalid";
                 }
                 var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
 
                 if (String.IsNullOrEmpty(requestParameter))
                 {
-                    return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           "Missing username";
+                    return "HTTP/1.0 404 Not found\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "User not found - Username is empty";
                 }
 
                 if (_userRepository.GetUserId(requestParameter) != userId)
                 {
-                    return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                    return "HTTP/1.0 404 Bad Not found\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            "User not found";
                 }
                 string username = userData.TryGetValue("Name", out var usernameValue) ? usernameValue : "";
@@ -98,13 +98,13 @@ namespace MonsterCardTradingGame.BusinessLogic
                 string password = userData.TryGetValue("Password", out var passwordValue) ? passwordValue : "";
 
                 _userRepository.UpdateUser(username, requestParameter, password, image, bio);
-                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n"+ "User sucessfully updated: " +
+                return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n"+ "User sucessfully updated\r\n " +
                        JsonSerializer.Serialize(_userRepository.GetUserData(userId));
             }
             catch (Exception ex)
             {
                 return
-                    "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                    "HTTP/1.0 404 Not found\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                     "User not Found";
             }
         }
@@ -130,8 +130,15 @@ namespace MonsterCardTradingGame.BusinessLogic
                 var sessionManager = SessionManager.Instance;
                 var token = sessionManager.GenerateToken(username); // Token generieren
                 int userIdByUserName = _userRepository.GetUserId(username).Value;
-                var sessionId = sessionManager.CreateSession(token, userIdByUserName);
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + $"User login successful: Token:{token} ";
+                string sessionId = sessionManager.CreateSession(token, userIdByUserName);
+                if (sessionId != "User already logged in")
+                {
+                    return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + $"User login successful: Token:{token} ";
+                }
+                else
+                {
+                    return "HTTP/1.0 409 Conflict OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "User already logged in";
+                }
             }
 
             return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
@@ -142,7 +149,7 @@ namespace MonsterCardTradingGame.BusinessLogic
         {
             
             return
-                "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "The stats could be retrieved successfully\r\n" +
                 JsonSerializer.Serialize(_statsRepository.GetStatsFromDB(userId));
         }
 
@@ -150,7 +157,7 @@ namespace MonsterCardTradingGame.BusinessLogic
         {
 
             return
-                "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "The scoreboard could be retrieved successfully\r\n" + 
                 JsonSerializer.Serialize(_statsRepository.GetAllStatsOrderedByElo());
         }
 

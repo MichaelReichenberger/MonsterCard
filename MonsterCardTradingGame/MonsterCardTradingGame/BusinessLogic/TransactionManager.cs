@@ -4,13 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using MonsterCardTradingGame.DataAccess.Repositories;
 using MonsterCardTradingGame.DataBase.Repositories;
+using MonsterCardTradingGame.Models;
 using MonsterCardTradingGame.Server.Sessions;
+using Newtonsoft.Json.Linq;
 using Npgsql.Replication;
 
 namespace MonsterCardTradingGame.BusinessLogic
 {
-    internal class TransactionManager
+    public class TransactionManager
     {
         private PackageRepository _packageRepository;
         private UserRepository _userRepository;
@@ -25,49 +28,41 @@ namespace MonsterCardTradingGame.BusinessLogic
             _tradingsRepository = new TradingsRepository("Host=localhost;Username=myuser;Password=mypassword;Database=mydb");
         }
 
-        internal string CreatePackage(string requestBody, string requestParameter, int userId)
+        public string CreatePackage(string requestBody, string requestParameter, int userId)
         {
             try
             {
                 Console.WriteLine(SessionManager.Instance.GetTokenByUserId(userId));
-                if (SessionManager.Instance.GetTokenByUserId(userId) == "admin-mctgToken" &&
-                    _userRepository.GetRole(userId) == "admin")
+                if (_userRepository.GetRole(userId) == "admin")
                 {
                     try
                     {
                         Parser newParser = new Parser();
                         if (newParser.IsValidJson(requestBody))
                         {
+                            var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+                            var Newcards = JsonSerializer.Deserialize<List<Dictionary<string, JsonElement>>>(requestBody, options);
+                            List<Card> AllCards = _cardsRepository.GetAllCardsFromDB();
+                            foreach (var card in Newcards)
+                            {
+                                if (AllCards.FirstOrDefault(Card => Card.UniqueId == card["Id"].GetString()) !=
+                                    null)
+                                {
+                                    return "HTTP/1.0 409 Conflict\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                                           "At least one card in the packages already exists";
+                                }
+                            }
                             _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
-                            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                            return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                                    "Package and cards successfully created";
                         }
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(e.Message);
+                        Console.WriteLine(e);
                     }
-
-                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           "Error inserting package. CardId may be a duplicate";
-
-                    try
-                    {
-                        Parser newParser = new Parser();
-                        if (newParser.IsValidJson(requestBody))
-                        {
-                            _packageRepository.DeserializeAndInsertPackageToDB(requestBody);
-                            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                                   "Package and cards successfully created";
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
-
-                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           "Error inserting package. CardId may be a duplicate";
+                    return "HTTP/1.0 500 Bad Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Internal Error";
                 }
                 else
                 {
@@ -91,7 +86,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                 {
                     if (userId > 0)
                     {
-                        if (_userRepository.GetCoins(userId) < 20)
+                        if (_userRepository.GetCoins(userId) < 5)
                         {
                             return "HTTP/1.0 403 \r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                                    "Not enough money for buying a card package";
@@ -99,7 +94,7 @@ namespace MonsterCardTradingGame.BusinessLogic
 
                         _packageRepository.TransferPackageToStack(userId);
                         _packageRepository.RemoveFirstPackage();
-                        _userRepository.SubstractCoins(userId, 20);
+                        _userRepository.SubstractCoins(userId, 5);
                         
                         return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +"A package has been successfully bought";
                     }
@@ -119,12 +114,64 @@ namespace MonsterCardTradingGame.BusinessLogic
                    "No packages available";
         }
 
-        internal string CreateTradingDeal(string requestBody, string requestParameter, int userId)
+        public string CreateOrExecuteTradingDeal(string requestBody, string requestParameter, int userId)
         {
-            if (_tradingsRepository.CheckIfDealExists(requestParameter))
+            requestBody = requestBody.Trim('"');
+            Console.WriteLine(requestParameter);
+            if (requestParameter == "/")
+            {
+                try
+                {
+                    var tradeData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(requestBody);
+
+                    if (tradeData == null ||
+                        !tradeData.TryGetValue("Id", out var idElement) ||
+                        !tradeData.TryGetValue("CardToTrade", out var cardToTradeElement) ||
+                        !tradeData.TryGetValue("MinimumDamage", out var minimumDamageElement))
+                    {
+                        return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               "Missing required fields";
+                    }
+
+                    string id = idElement.GetString();
+
+                    if (_tradingsRepository.CheckIfDealExists(id))
+                    {
+                        return "HTTP/1.0 409 Conflict\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               "A deal with this deal ID already exists";
+                    }
+                    string cardToTrade = cardToTradeElement.GetString();
+                    List<Card> userCards = _cardsRepository.GetCardsFromDB(userId);
+                    if ((userCards.FirstOrDefault(Card => Card.UniqueId == cardToTrade ) == null))
+                    {
+                        return "HTTP/1.0 403 Forbidden\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               "The offered card is not owned by the user, or the requirements are not met (Type, MinimumDamage), or the offered card is locked in the deck, or the user tries to trade with self";
+                    }
+                    int minDamage = minimumDamageElement.GetInt32();
+
+                    _tradingsRepository.InsertCardsIntoTradings(userId, id, cardToTrade, minDamage);
+
+                    return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "Trading deal successfully created";
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    return
+                        "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                        "Internal Error";
+                }
+            }else if (_tradingsRepository.CheckIfDealExists(requestParameter))
             {
                 if (_tradingsRepository.GetSenderIdByDealId(requestParameter) != userId)
                 {
+                    Console.WriteLine(requestBody);
+                    List<Card> userCards = _cardsRepository.GetCardsFromDB(userId);
+                    if ((userCards.FirstOrDefault(Card => Card.UniqueId == requestBody) == null))
+                    {
+                        return "HTTP/1.0 403 Forbidden\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                               "The offered card is not owned by the user, or the requirements are not met (Type, MinimumDamage), or the offered card is locked in the deck, or the user tries to trade with self";
+                    }
                     try
                     {
                         _cardsRepository.TransferReceivedCard(requestParameter, requestBody);
@@ -140,58 +187,48 @@ namespace MonsterCardTradingGame.BusinessLogic
                 }
                 else
                 {
-                    return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           "It is not allowed to deal with your self!";
+                    return "HTTP/1.0 403 Forbidden\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                           "The offered card is not owned by the user, or the requirements are not met (Type, MinimumDamage), or the offered card is locked in the deck, or the user tries to trade with self";
                 }
             }
-            try
-            {
-                var tradeData = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(requestBody);
-
-                if (tradeData == null ||
-                    !tradeData.TryGetValue("Id", out var idElement) ||
-                    !tradeData.TryGetValue("CardToTrade", out var cardToTradeElement) ||
-                    !tradeData.TryGetValue("MinimumDamage", out var minimumDamageElement))
-                {
-                    return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                           "Missing required fields";
-                }
-
-                string id = idElement.GetString();
-                string cardToTrade = cardToTradeElement.GetString();
-                int minDamage = minimumDamageElement.GetInt32();
-
-                _tradingsRepository.InsertCardsIntoTradings(userId, id, cardToTrade, minDamage);
-
-                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                       "Trading data successfully inserted";
-            }
-            catch (Exception ex)
-            {
-                return
-                    "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    JsonSerializer.Serialize(new { Message = $"An error occurred: {ex.Message}" });
-            }
+            return "HTTP/1.0 404 Not found\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                   "The provided deal ID was not found";
         }
 
         internal string GetActiveTradingDeals(int userId)
         {
-            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                   JsonSerializer.Serialize(_tradingsRepository.CheckTradingDeals(userId));
+            List<TradingDeal> tradingDeals = _tradingsRepository.CheckTradingDeals(userId);
+            if (tradingDeals.Count == 0 || tradingDeals == null)
+            {
+                return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "The request was fine, but there are no trading deals available";
+            }
+            return "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "There are trading deals available, the response contains these\r\n" +
+                   JsonSerializer.Serialize(tradingDeals);
         }
 
         internal string DeleteTradingDeal(string requestBody, string requestParameter, int userId)
         {
-            if (_tradingsRepository.CheckIfDealExists(requestParameter))
+            if (_tradingsRepository.CheckIfDealExists(requestParameter) && _tradingsRepository.GetSenderIdByDealId(requestParameter) == userId)
             {
                 _tradingsRepository.DeleteById(requestParameter);
                 return
                     "HTTP/1.0 200 OK\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                    "Deal deleted";
+                    "Trading deal successfully deleted";
+            }else if (!(_tradingsRepository.GetSenderIdByDealId(requestParameter) == userId))
+            {
+                return "HTTP/1.0 403 Forbidden\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       "The deal contains a card that is not owned by the user";
             }
-            return
-                "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
-                "Error deleting deal";
+            else if(!_tradingsRepository.CheckIfDealExists(requestParameter))
+            { 
+                return "HTTP/1.0 404 Not found\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                     "The provided deal ID was not found";
+            }
+            else
+            {
+                return "HTTP/1.0 500 Internal Server Error\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
+                       "An error occurred";
+            }
         }
     }
     
