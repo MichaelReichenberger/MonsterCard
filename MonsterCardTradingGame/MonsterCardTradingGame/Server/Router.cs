@@ -8,6 +8,7 @@ namespace MonsterCardTradingGame.Server
     {
         private List<Route> routes = new List<Route>();
 
+        //Add Route to the list
         public void AddRoute(string method, string url, RouteAction action)
         {
             routes.Add(new Route(method, url, action));
@@ -18,6 +19,7 @@ namespace MonsterCardTradingGame.Server
             routes.Add(new Route(method, url, action));
         }
 
+        //Handle anf forward the request
         public async Task<string> HandleRequest(string method, string url, string requestBody, string requestParameter, int userId)
         {
             foreach (var route in routes)
@@ -30,6 +32,7 @@ namespace MonsterCardTradingGame.Server
             return NotFound();
         }
 
+        //Return a 404 error
         private string NotFound()
         {
             return "HTTP/1.0 404 ERR\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +

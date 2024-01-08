@@ -21,39 +21,43 @@ namespace MonsterCardTradingGame.BusinessLogic
         }
 
 
+        //Add a new User to the system
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string RegisterUser(string requestBody, string requestParameter)
         {
             try
             {
                 var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
+                //Check for missing credentials
                 if (userData == null || !userData.TryGetValue("Username", out var username) || !userData.TryGetValue("Password", out var password))
                 {
                     return "HTTP/1.0 400 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            JsonSerializer.Serialize(new { Message = "Missing Username or Password" });
                 }
 
+                //initialize optional parameters
                 string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
                 string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
-               
-
                 _userRepository.AddUser(username, password, image, bio, null); // If an error occurs, it will go to catch block
 
-                
                 return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" + "User successfully created\r\n " +
                        JsonSerializer.Serialize(_userRepository.GetUserCredentials(username));
             }
             catch (Exception e)
-            { // Log the detailed exception
+            { 
                 Console.WriteLine(e.Message);
                 return "HTTP/1.0 409 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                        "User with same username already registered";
             }
         }
 
+        //Get the data for a specific user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string GetUserData(string requestBody, string requestParameter, int userId)
         {
             try
             {
+                //Check if user is authorized to get the data (right user or admin)
                 if (_userRepository.GetUserId(requestParameter) != userId && _userRepository.GetRole(userId) != "admin")
                 {
                     return "HTTP/1.0 401 Bad Request\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
@@ -70,10 +74,14 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
         }
 
+
+        //Update the data for a specific user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string UpdateUserData(string requestBody, string requestParameter, int userId)
         {
             try
             {
+                //Check if user is authorized to update the data (right user or admin)
                 if (_userRepository.GetUserId(requestParameter) != userId && _userRepository.GetRole(userId) != "admin")
                 {
                     return "HTTP/1.0 401 Unauthorized\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
@@ -81,22 +89,27 @@ namespace MonsterCardTradingGame.BusinessLogic
                 }
                 var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
 
+                //check if username is empty
                 if (String.IsNullOrEmpty(requestParameter))
                 {
                     return "HTTP/1.0 404 Not found\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            "User not found - Username is empty";
                 }
 
+                //check if user exists
                 if (_userRepository.GetUserId(requestParameter) != userId)
                 {
                     return "HTTP/1.0 404 Bad Not found\r\nContent-Type: application/json; charset=utf-8\r\n\r\n" +
                            "User not found";
                 }
+                
+                //initialize optional parameters
                 string username = userData.TryGetValue("Name", out var usernameValue) ? usernameValue : "";
                 string bio = userData.TryGetValue("Bio", out var bioValue) ? bioValue : "";
                 string image = userData.TryGetValue("Image", out var imageValue) ? imageValue : "";
                 string password = userData.TryGetValue("Password", out var passwordValue) ? passwordValue : "";
 
+                //Update the user in DB
                 _userRepository.UpdateUser(username, requestParameter, password, image, bio);
                 return "HTTP/1.0 201 Created\r\nContent-Type: application/json; charset=utf-8\r\n\r\n"+ "User sucessfully updated\r\n " +
                        JsonSerializer.Serialize(_userRepository.GetUserData(userId));
@@ -109,10 +122,14 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
         }
 
+        //Handle the login of a user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string HandleLogin(string requestBody, string requestParameter)
         {
+            //Serialize the request body
             var userData = JsonSerializer.Deserialize<Dictionary<string, string>>(requestBody);
             
+            //Check for missing credentials
             if (userData == null || !userData.TryGetValue("Username", out var username) ||
                 !userData.TryGetValue("Password", out var password))
             {
@@ -120,6 +137,7 @@ namespace MonsterCardTradingGame.BusinessLogic
                        "Missing Username or Password";
             }
 
+            //Check if password is correct
             if (password != _userRepository.GetPasswordByUsername(username))
             {
                 Console.WriteLine(password);
@@ -128,8 +146,10 @@ namespace MonsterCardTradingGame.BusinessLogic
             else
             {
                 var sessionManager = SessionManager.Instance;
-                var token = sessionManager.GenerateToken(username); // Token generieren
+                //Generate Token
+                var token = sessionManager.GenerateToken(username); 
                 int userIdByUserName = _userRepository.GetUserId(username).Value;
+                //Create Session
                 string sessionId = sessionManager.CreateSession(token, userIdByUserName);
                 if (sessionId != "User already logged in")
                 {
@@ -145,6 +165,9 @@ namespace MonsterCardTradingGame.BusinessLogic
                    "Invalid username/password provided:  Token should be {username}-mctgToken";
         }
 
+
+        //Get stats from a specific user
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal string GetUserStats(int userId)
         {
             
@@ -153,6 +176,8 @@ namespace MonsterCardTradingGame.BusinessLogic
                 JsonSerializer.Serialize(_statsRepository.GetStatsFromDB(userId));
         }
 
+        //Get all Stats from all users (Scoreboard)
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         internal string GetUserScoreboard(int userId)
         {
 

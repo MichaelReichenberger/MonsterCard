@@ -21,8 +21,12 @@ namespace MonsterCardTradingGame.BusinessLogic
             _parser = new Parser();
         }
 
+
+        //Map the deck to deck object
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public CardDeck ParseCardDeck(int userId)
         {
+            //Get the decks uniqueIds from the database
             List<string> deckString = _parser.ParseUniqueIds(_deckRepository.GetDeckUniqueIdsByUserId(userId).Split(",").ToList());
             if (deckString.Count >= 5)
             {
@@ -30,6 +34,8 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
             deckString = deckString.Where(id => !String.IsNullOrEmpty(id)).ToList();
             List<Card> deckCards = new List<Card>();
+
+            //Get the card model from the database for each card in the deck
             foreach (string cardId in deckString)
             {
                 Console.WriteLine(cardId);
@@ -42,7 +48,6 @@ namespace MonsterCardTradingGame.BusinessLogic
                     Console.WriteLine(e.Message);
                 }
             }
-
             foreach (Card card in deckCards)
             {
                 Console.WriteLine(card.Name+"-"+card.Element+"-"+card.Damage);

@@ -37,7 +37,9 @@ namespace MonsterCardTradingGame.DataAccess.Repositories
             throw new NotImplementedException();
         }
 
-        
+
+        //Get list of users Cards from DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public virtual List<Card> GetCardsFromDB(int userId)
         {
             return _dbAccess.ExecuteQuery<List<Card>>(conn =>
@@ -71,6 +73,8 @@ namespace MonsterCardTradingGame.DataAccess.Repositories
             });
         }
 
+        //Get List of all cards from DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public virtual List<Card> GetAllCardsFromDB()
         {
             return _dbAccess.ExecuteQuery<List<Card>>(conn =>
@@ -104,6 +108,8 @@ namespace MonsterCardTradingGame.DataAccess.Repositories
         }
 
 
+        //Get CardModel from DB, so that it can be used in trading/battle
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public virtual Card GetCardModelFromDB(string uniqueId)
         {
             return _dbAccess.ExecuteQuery<Card>(conn =>
@@ -140,30 +146,8 @@ namespace MonsterCardTradingGame.DataAccess.Repositories
         }
 
 
-        public string GetDeckInfosFromDB(int userId)
-        {
-            return _dbAccess.ExecuteQuery<string>(conn =>
-            {
-                using (var cmd = new NpgsqlCommand("SELECT * FROM card_stacks WHERE unique_id IN (SELECT unique_id FROM decks WHERE user_id = @userId)", conn))
-                {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    using (var reader = cmd.ExecuteReader())
-                    {
-                        var result = new StringBuilder();
-                        while (reader.Read())
-                        {
-                            for (int i = 0; i < reader.FieldCount; i++)
-                            {
-                                result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
-                            }
-                            result.AppendLine();
-                        }
-                        return result.ToString();
-                    }
-                }
-            });
-        }
-
+        //Check if a user own a card in case of a trade
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public bool CheckIfUserOwnsCard(int userId, string cardId)
         {
             return _dbAccess.ExecuteQuery<bool>(conn =>
@@ -179,6 +163,8 @@ namespace MonsterCardTradingGame.DataAccess.Repositories
             });
         }
 
+        //Transfer card after deal is accepted
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void TransferReceivedCard(string dealId, string receivedCard)
         {
             int userId = _tradingsRepository.GetSenderIdByDealId(dealId);

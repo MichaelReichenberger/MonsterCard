@@ -99,78 +99,9 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             });
         }
 
-        public int GetUserElo(int userId)
-        {
-            return _dbAccess.ExecuteQuery<int>(conn =>
-            {
-                using (var cmd = new NpgsqlCommand("SELECT elo FROM user_stats WHERE user_id = @userId", conn))
-                {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    return (int)cmd.ExecuteScalar();
-                }
-            });
-        }
-
-        public int GetUserWins(int userId)
-        {
-            return _dbAccess.ExecuteQuery<int>(conn =>
-            {
-                using (var cmd = new NpgsqlCommand("SELECT wins FROM user_stats WHERE user_id = @userId", conn))
-                {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    return (int)cmd.ExecuteScalar();
-                }
-            });
-        }
-
-        public int GetUserLosses(int userId)
-        {
-            return _dbAccess.ExecuteQuery<int>(conn =>
-            {
-                using (var cmd = new NpgsqlCommand("SELECT losses FROM user_stats WHERE user_id = @userId", conn))
-                {
-                    cmd.Parameters.AddWithValue("@userId", userId);
-                    return (int)cmd.ExecuteScalar();
-                }
-            });
-        }
-
-        public string InsertWinStatsIntoDB(int userId, int elo)
-        {
-            try
-            {
-                return _dbAccess.ExecuteQuery<string>(conn =>
-                {
-                    using (var cmd = new NpgsqlCommand(
-                               "INSERT INTO user_stats (user_id, elo, wins, losses) VALUES (@userId, @elo, @wins, @losses)",
-                               conn))
-                    {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        cmd.Parameters.AddWithValue("@elo", GetUserElo(userId) + elo);
-                        cmd.Parameters.AddWithValue("@wins", GetUserWins(userId) + 1);
-                        using (var reader = cmd.ExecuteReader())
-                        {
-                            var result = new StringBuilder();
-                            while (reader.Read())
-                            {
-                                for (int i = 0; i < reader.FieldCount; i++)
-                                {
-                                    result.Append($"{reader.GetName(i)}: {reader[i].ToString()}, ");
-                                }
-
-                                result.AppendLine();
-                            }
-
-                            return result.ToString();
-                        }
-                    }
-                });
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error while inserting stats into DB");
-            }
-        }
+        
+        //Update stats (in case of win of a game) iun DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string UpdateWinStatsInDB(int userId)
         {
             try
@@ -209,6 +140,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
         }
 
 
+        //Update stats (in case of loss of a game) in DB
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string UpdateLoseStatsInDB(int userId)
         {
             try

@@ -20,6 +20,7 @@ namespace MonsterCardTradingGame.DataBase
             return connection;
         }
 
+        //Execute Database Query
         public T ExecuteQuery<T>(Func<NpgsqlConnection, T> queryFunction)
         {
             using (var conn = CreateConnection())
@@ -28,6 +29,7 @@ namespace MonsterCardTradingGame.DataBase
             } 
         }
 
+        //Execute Database Transaction
         public void ExecuteTransaction(Action<NpgsqlConnection, NpgsqlTransaction> transactionAction)
         {
             using (var conn = CreateConnection())

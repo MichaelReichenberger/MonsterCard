@@ -34,27 +34,7 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             throw new NotImplementedException();
         }
 
-        public void DeleteById(int id)
-        {
-            _dbAccess.ExecuteTransaction((conn, transaction) =>
-            {
-                try
-                {
-                    using (var cmd = new NpgsqlCommand("DELETE FROM decks WHERE user_id = @userId", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@userId", id);
-                        cmd.ExecuteNonQuery();
-                    }
-                    transaction.Commit();
-                }
-                catch (Exception e)
-                {
-                    transaction.Rollback();
-                    throw new Exception("Error while removing deck");
-                }
-            });
-        }
-
+        
 
         //Insert deck in DB
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -162,6 +142,8 @@ namespace MonsterCardTradingGame.DataBase.Repositories
             }
         }
 
+        //Delete the deck by userId
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public void DeleteDeckByUserId(int userId)
         {
             _dbAccess.ExecuteTransaction((conn, transaction) =>
@@ -181,26 +163,6 @@ namespace MonsterCardTradingGame.DataBase.Repositories
                     throw new Exception("Error while removing deck");
                 }
             });
-        }
-
-        public int CountCardsInDeck(int userId)
-        {
-            try
-            {
-                return _dbAccess.ExecuteQuery<int>(conn =>
-                {
-                    using (var cmd = new NpgsqlCommand("SELECT COUNT(*) FROM decks WHERE user_id = @userId", conn))
-                    {
-                        cmd.Parameters.AddWithValue("@userId", userId);
-                        // Safely convert the result to int
-                        return Convert.ToInt32(cmd.ExecuteScalar());
-                    }
-                });
-            }
-            catch (Exception e)
-            {
-                throw new Exception("Error while getting deck count");
-            }
         }
     }
 }

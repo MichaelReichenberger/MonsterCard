@@ -1,5 +1,6 @@
 
 using System.Transactions;
+using MonsterCardTradingGame;
 using MonsterCardTradingGame.DataAccess.Repositories;
 using MonsterCardTradingGame.DataBase.Repositories;
 using NUnit;
@@ -369,7 +370,7 @@ namespace MonsterCardTestProject
         {
             Card Goblin = new Card("Goblin", Element.Normal, 10, "1");
             Card Goblin2 = new Card("Goblin", Element.Water, 10, "2");
-            Goblin2.CurrentWins = 6;
+            Goblin2.CurrentWins = 2;
             int result = _gameManager.CardFight(Goblin, Goblin2);
             Assert.AreEqual(2, result);
         }

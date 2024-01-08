@@ -13,9 +13,11 @@ namespace MonsterCardTradingGame.BusinessLogic
 {
     public class Parser
     {
-       
-        
 
+
+
+        //Parse the cards to right format
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public (string Element, string Creature) ParseCards(string cardName)
         {
             // Goblin
@@ -68,6 +70,8 @@ namespace MonsterCardTradingGame.BusinessLogic
             return ("Unknown", "Unknown");
         }
 
+        //Parse the URL to right format
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         public string ParseUrl(string requestLine, int parseType)
         {
             string[] parts = requestLine.Split(' ');
@@ -89,13 +93,17 @@ namespace MonsterCardTradingGame.BusinessLogic
             return "/";
         }
 
+        //Check if the input is valid JSON
         public bool IsValidJson(string strInput)
         {
+            //Check if input is empty
             if (string.IsNullOrWhiteSpace(strInput)) { return false; }
             strInput = strInput.Trim();
             if ((strInput.StartsWith("{") && strInput.EndsWith("}")) || 
                 (strInput.StartsWith("[") && strInput.EndsWith("]"))) 
             {
+
+                //For debugging
                 try
                 {
                     var obj = JToken.Parse(strInput);
@@ -121,6 +129,7 @@ namespace MonsterCardTradingGame.BusinessLogic
             }
         }
 
+        //Parse the decks uniqueIds to right format
         public virtual List<string>ParseUniqueIds(List<string> deckIds)
         {
             List<string> filteredIds = deckIds.Where(id => !String.IsNullOrEmpty(id)).ToList();
